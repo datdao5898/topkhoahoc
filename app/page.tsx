@@ -1,11 +1,18 @@
 import { getPosts } from '@/lib/wordpress';
 import Link from 'next/link';
+import HeroBanner from '@/components/HeroBanner'; // Dấu @ trỏ về thư mục gốc
+import Header from '@/components/Header';
+import Footer from '@/components/Footer';
 
 export default async function HomePage() {
   const posts = await getPosts();
 
   return (
+    <>
+    <Header />
     <section className="container mx-auto px-4 py-12">
+      
+      <HeroBanner />
       <h1 className="text-3xl font-extrabold mb-10 text-center">Khóa Học Mới Nhất</h1>
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -52,5 +59,7 @@ export default async function HomePage() {
         {/* KẾT THÚC VÒNG LẶP */}
       </div>
     </section>
+    <Footer/>
+    </>
   );
 }
