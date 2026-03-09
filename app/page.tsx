@@ -5,6 +5,8 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import QuoteSection from '@/components/QuoteSection';
 import CourseGrid from '@/components/CourseGrid';
+import WisdomSection from '@/components/Wisdomquote';
+import CategorySection from '@/components/CourseCat';
 
 export default async function HomePage() {
   const posts = await getPosts();
@@ -15,6 +17,8 @@ export default async function HomePage() {
     <section className="container mx-auto px-4 py-12">
       
       <HeroBanner />
+      <CategorySection />
+      <WisdomSection />
       <QuoteSection />
       <CourseGrid posts={posts} />
     </section>

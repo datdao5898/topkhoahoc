@@ -17,7 +17,7 @@ const QuoteSection = () => {
           
           <blockquote className="relative z-10">
             <h2 className="text-3xl lg:text-4xl font-extrabold text-eduBlue italic leading-tight mb-8">
-              Chuyên gia trong bất kỳ lĩnh vực nào <br className="hidden lg:block" />
+              Chuyên gia trong bất kỳ lĩnh vực nào
               cũng từng là <span className="text-eduOrange">người mới bắt đầu.</span>
             </h2>
             
