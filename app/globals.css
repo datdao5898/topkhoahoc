@@ -1,8 +1,12 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 
-@theme {
+/* inline: để var(--font-be-vietnam) được đọc tại chỗ dùng, không phải ở :root. */
+@theme inline {
   --font-sans: var(--font-be-vietnam), ui-sans-serif, system-ui, sans-serif;
+}
+
+@theme {
   --color-brand-50: #fff7ed;
   --color-brand-100: #ffedd5;
   --color-brand-500: #f97316;

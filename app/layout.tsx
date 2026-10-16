@@ -36,8 +36,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="vi">
-      <body className={`${beVietnam.variable} font-sans antialiased min-h-screen flex flex-col`}>
+    <html lang="vi" className={beVietnam.variable}>
+      <body className="font-sans antialiased min-h-screen flex flex-col">
         <Header />
         <main className="flex-1">{children}</main>
         <Footer />
