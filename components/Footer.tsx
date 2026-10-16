@@ -17,6 +17,9 @@ export default function Footer() {
           <Link href="/gioi-thieu" className="hover:text-brand-600">
             Giới thiệu
           </Link>
+          <a href={SITE.facebook} target="_blank" rel="noopener noreferrer" className="hover:text-brand-600">
+            Facebook
+          </a>
           <Link href="/feed.xml" className="hover:text-brand-600">
             RSS
           </Link>

@@ -9,7 +9,7 @@ export default function Logo({ size = 36, withTagline = false }: { size?: number
           Top<span className="text-brand-600">KhoaHoc</span>
         </span>
         {withTagline && (
-          <span className="mt-1 text-[11px] font-medium text-stone-500">Mỗi ngày một thuật ngữ</span>
+          <span className="mt-1 text-[11px] font-medium text-stone-500 max-sm:hidden">Mỗi ngày một thuật ngữ</span>
         )}
       </span>
     </span>

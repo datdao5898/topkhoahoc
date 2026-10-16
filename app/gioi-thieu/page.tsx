@@ -40,7 +40,7 @@ export default function AboutPage() {
         </ul>
         <h2>Góp ý, báo sai</h2>
         <p>
-          Thấy giải thích chưa đúng hoặc muốn đề xuất từ mới? Hãy nhắn cho fanpage của chúng tôi. Mọi góp ý đều được xem xét
+          Thấy giải thích chưa đúng hoặc muốn đề xuất từ mới? Hãy nhắn cho <a href={SITE.facebook} target="_blank" rel="noopener noreferrer">fanpage Facebook</a> của chúng tôi. Mọi góp ý đều được xem xét
           trước lần cập nhật tiếp theo.
         </p>
         <p>

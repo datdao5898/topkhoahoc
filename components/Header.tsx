@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Logo from "@/components/Logo";
+import { FollowButton } from "@/components/FollowFacebook";
 
 export default function Header() {
   return (
@@ -8,13 +9,16 @@ export default function Header() {
         <Link href="/" className="shrink-0" aria-label="TopKhoaHoc – trang chủ">
           <Logo withTagline />
         </Link>
-        <nav className="flex items-center gap-5 text-sm font-semibold text-stone-700 max-sm:gap-3 max-sm:text-xs">
-          <Link href="/" className="hover:text-brand-600 transition">
+        <nav className="flex items-center gap-5 text-sm font-semibold text-stone-700 max-sm:gap-3">
+          {/* Trên điện thoại logo đã dẫn về trang chủ, bỏ bớt link cho khỏi tràn. */}
+          <Link href="/" className="hover:text-brand-600 transition max-sm:hidden">
             Hôm nay
           </Link>
           <Link href="/thuat-ngu" className="hover:text-brand-600 transition">
-            Tất cả thuật ngữ
+            <span className="max-sm:hidden">Tất cả thuật ngữ</span>
+            <span className="sm:hidden">Thuật ngữ</span>
           </Link>
+          <FollowButton />
         </nav>
       </div>
     </header>

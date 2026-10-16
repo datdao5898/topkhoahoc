@@ -1,5 +1,6 @@
 import Link from "next/link";
 import TermCard from "@/components/TermCard";
+import { FollowCard } from "@/components/FollowFacebook";
 import { formatDate } from "@/lib/format";
 import { getPublishedTerms, getTermOfTheDay } from "@/lib/terms";
 import { SITE, absoluteUrl, organizationJsonLd } from "@/lib/site";
@@ -57,6 +58,10 @@ export default function HomePage() {
       ) : (
         <p className="text-center text-stone-500">Thuật ngữ đầu tiên sắp lên sóng!</p>
       )}
+
+      <div className="mt-6">
+        <FollowCard title="Mỗi sáng một từ mới trên bảng tin của bạn" />
+      </div>
 
       {recent.length > 0 && (
         <section className="mt-12">

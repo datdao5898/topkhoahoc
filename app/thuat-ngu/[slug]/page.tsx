@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import ShareButtons from "@/components/ShareButtons";
+import { FollowCard } from "@/components/FollowFacebook";
 import TermCard from "@/components/TermCard";
 import { formatDate } from "@/lib/format";
 import { getAdjacentTerms, getPublishedTerms, getRelatedTerms, getTermBySlug, type Term } from "@/lib/terms";
@@ -219,6 +220,10 @@ export default async function TermPage({ params }: Props) {
         <p className="mb-3 font-semibold">Bạn bè cũng đang thắc mắc? Gửi cho họ:</p>
         <ShareButtons url={url} title={`${term.term} là gì?`} />
       </section>
+
+      <div className="mt-8">
+        <FollowCard />
+      </div>
 
       {(newer || older) && (
         <nav className="mt-10 grid grid-cols-2 gap-4 text-sm">
