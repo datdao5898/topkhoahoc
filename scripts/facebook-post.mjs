@@ -77,8 +77,11 @@ for (const term of terms) {
   try {
     const out = execFileSync(process.execPath, ["server/scripts/post.mjs", "--project", "topkhoahoc", "--message-file", messageFile, "--link", link, "--title", `${term.term} là gì?`], { cwd: toolDir, encoding: "utf8" });
     const result = JSON.parse(out.trim().split("\n").at(-1));
-    posted[term.slug] = { date, facebookPostId: result.facebookPostId, dryRun: result.dryRun, postedAt: new Date().toISOString() };
-    fs.writeFileSync(stateFile, JSON.stringify(posted, null, 2));
+    // Bài chạy thử (tool đang DRY_RUN=true) không tính là đã đăng, để lần chạy thật vẫn đăng.
+    if (!result.dryRun) {
+      posted[term.slug] = { date, facebookPostId: result.facebookPostId, postedAt: new Date().toISOString() };
+      fs.writeFileSync(stateFile, JSON.stringify(posted, null, 2));
+    }
     console.log(`${term.slug}: đã đăng Facebook ${result.facebookPostId}${result.dryRun ? " (DRY_RUN)" : ""}`);
   } catch (err) {
     console.error(`${term.slug}: đăng Facebook thất bại. ${err.stderr || err.message}`);
