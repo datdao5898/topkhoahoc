@@ -20,6 +20,12 @@ related: []
 faq:
   - q: "Câu hỏi người ta hay search kèm?"
     a: "Trả lời ngắn."
+# Nguồn tham khảo: từ điển, báo, Wikipedia, Know Your Meme… Tăng độ tin cậy với Google và AI.
+sources:
+  - title: "Tên nguồn"
+    url: "https://..."
+# Khi sửa nội dung bài cũ, thêm ngày cập nhật:
+# updated: 2026-01-15
 ---
 
 ## Giải thích chi tiết

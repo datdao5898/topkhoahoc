@@ -5,7 +5,7 @@ import ShareButtons from "@/components/ShareButtons";
 import TermCard from "@/components/TermCard";
 import { formatDate } from "@/lib/format";
 import { getAdjacentTerms, getPublishedTerms, getRelatedTerms, getTermBySlug, type Term } from "@/lib/terms";
-import { SITE, absoluteUrl } from "@/lib/site";
+import { SITE, absoluteUrl, organizationJsonLd } from "@/lib/site";
 
 // Thuật ngữ hẹn giờ chưa có trong build sẽ được render khi tới ngày (ISR).
 export const revalidate = 3600;
@@ -32,10 +32,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     openGraph: {
       type: "article",
       url,
+      siteName: SITE.name,
+      locale: "vi_VN",
       title: `${term.term} là gì?`,
       description: term.short,
       publishedTime: term.date,
       modifiedTime: term.updated ?? term.date,
+      section: term.category,
     },
   };
 }
@@ -57,6 +60,7 @@ export default async function TermPage({ params }: Props) {
         alternateName: term.aliases,
         description: term.short,
         url,
+        "@id": `${url}#term`,
         inDefinedTermSet: {
           "@type": "DefinedTermSet",
           name: "Từ điển thuật ngữ trending",
@@ -72,9 +76,16 @@ export default async function TermPage({ params }: Props) {
         inLanguage: "vi-VN",
         image: `${url}/opengraph-image`,
         mainEntityOfPage: url,
-        author: { "@type": "Organization", name: SITE.name, url: SITE.url },
-        publisher: { "@type": "Organization", name: SITE.name, url: SITE.url },
+        about: { "@id": `${url}#term` },
+        keywords: [term.term, ...term.aliases].join(", "),
+        articleSection: term.category,
+        author: { "@id": absoluteUrl("/#organization") },
+        publisher: { "@id": absoluteUrl("/#organization") },
+        ...(term.sources.length
+          ? { citation: term.sources.map((s) => ({ "@type": "CreativeWork", name: s.title, url: s.url })) }
+          : {}),
       },
+      organizationJsonLd(),
       {
         "@type": "BreadcrumbList",
         itemListElement: [
@@ -123,6 +134,11 @@ export default async function TermPage({ params }: Props) {
           <time dateTime={term.date} className="text-stone-500">
             {formatDate(term.date)}
           </time>
+          {term.updated && term.updated !== term.date && (
+            <span className="text-stone-500">
+              · Cập nhật <time dateTime={term.updated}>{formatDate(term.updated, "short")}</time>
+            </span>
+          )}
         </div>
         <h1 className="mt-4 text-4xl md:text-5xl font-extrabold">{term.term} là gì?</h1>
         {(term.pronunciation || term.aliases.length > 0) && (
@@ -138,6 +154,12 @@ export default async function TermPage({ params }: Props) {
         <h2 className="text-xs font-bold uppercase tracking-widest text-brand-700">Định nghĩa nhanh</h2>
         <p className="mt-2 text-lg md:text-xl font-medium leading-relaxed">{term.short}</p>
       </section>
+      <p className="mt-3 text-sm text-stone-500">
+        Biên soạn bởi{" "}
+        <Link href="/gioi-thieu" className="font-semibold text-stone-700 hover:text-brand-600">
+          Ban biên tập {SITE.name}
+        </Link>
+      </p>
 
       {term.origin && (
         <section className="mt-8">
@@ -175,6 +197,21 @@ export default async function TermPage({ params }: Props) {
               </details>
             ))}
           </div>
+        </section>
+      )}
+
+      {term.sources.length > 0 && (
+        <section className="mt-10">
+          <h2 className="text-2xl font-bold">Nguồn tham khảo</h2>
+          <ul className="mt-3 list-disc pl-5 space-y-1 text-stone-700">
+            {term.sources.map((s) => (
+              <li key={s.url}>
+                <a href={s.url} target="_blank" rel="noopener" className="text-brand-600 hover:underline">
+                  {s.title}
+                </a>
+              </li>
+            ))}
+          </ul>
         </section>
       )}
 

@@ -1,0 +1,22 @@
+name: IndexNow hằng ngày
+
+on:
+  schedule:
+    # 18:30 UTC = 01:30 sáng giờ VN, sau khi thuật ngữ mới đã tự lên trang.
+    - cron: "30 18 * * *"
+  workflow_dispatch:
+    inputs:
+      all:
+        description: "Gửi toàn bộ thuật ngữ"
+        type: boolean
+        default: false
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node scripts/indexnow.mjs ${{ inputs.all && '--all' || '' }}

@@ -16,6 +16,9 @@ faq:
     a: "Aura farming là cố tình làm điều ngầu để “cày” điểm aura, ví dụ tạo dáng điềm tĩnh trước camera. Trào lưu này bùng nổ năm 2025 với clip cậu bé múa trên mũi thuyền đua ở Indonesia."
   - q: "+1000 aura nghĩa là gì?"
     a: "Là lời khen ai đó vừa làm một việc rất ngầu, tự tin hoặc đáng nể."
+sources:
+  - title: "Aura farming – Wikipedia"
+    url: "https://en.wikipedia.org/wiki/Aura_farming"
 ---
 
 ## Aura nghĩa là gì trên mạng xã hội?

@@ -14,6 +14,9 @@ export default function Footer() {
           <Link href="/thuat-ngu" className="hover:text-brand-600">
             Tất cả thuật ngữ
           </Link>
+          <Link href="/gioi-thieu" className="hover:text-brand-600">
+            Giới thiệu
+          </Link>
           <Link href="/feed.xml" className="hover:text-brand-600">
             RSS
           </Link>

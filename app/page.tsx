@@ -2,7 +2,7 @@ import Link from "next/link";
 import TermCard from "@/components/TermCard";
 import { formatDate } from "@/lib/format";
 import { getPublishedTerms } from "@/lib/terms";
-import { SITE, absoluteUrl } from "@/lib/site";
+import { SITE, absoluteUrl, organizationJsonLd } from "@/lib/site";
 
 // Kiểm tra lại mỗi giờ để thuật ngữ hẹn giờ tự lên trang chủ khi tới ngày.
 export const revalidate = 3600;
@@ -12,11 +12,18 @@ export default function HomePage() {
 
   const jsonLd = {
     "@context": "https://schema.org",
-    "@type": "WebSite",
-    name: SITE.name,
-    url: absoluteUrl("/"),
-    description: SITE.description,
-    inLanguage: "vi-VN",
+    "@graph": [
+      {
+        "@type": "WebSite",
+        "@id": absoluteUrl("/#website"),
+        name: SITE.name,
+        url: absoluteUrl("/"),
+        description: SITE.description,
+        inLanguage: "vi-VN",
+        publisher: { "@id": absoluteUrl("/#organization") },
+      },
+      organizationJsonLd(),
+    ],
   };
 
   return (

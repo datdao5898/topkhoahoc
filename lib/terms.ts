@@ -7,6 +7,7 @@ import { TIME_ZONE } from "@/lib/format";
 const TERMS_DIR = path.join(process.cwd(), "content", "terms");
 
 export type Faq = { q: string; a: string };
+export type Source = { title: string; url: string };
 
 export type Term = {
   slug: string;
@@ -21,8 +22,11 @@ export type Term = {
   examples: string[];
   related: string[];
   faq: Faq[];
+  sources: Source[];
   seoTitle?: string;
   html: string;
+  /** Nội dung Markdown gốc (dùng cho llms-full.txt). */
+  body: string;
 };
 
 function toDateString(value: unknown): string | undefined {
@@ -59,8 +63,12 @@ function readTerm(file: string): Term {
     faq: Array.isArray(data.faq)
       ? data.faq.map((f: { q: unknown; a: unknown }) => ({ q: String(f.q), a: String(f.a) }))
       : [],
+    sources: Array.isArray(data.sources)
+      ? data.sources.map((s: { title: unknown; url: unknown }) => ({ title: String(s.title), url: String(s.url) }))
+      : [],
     seoTitle: data.seoTitle ? String(data.seoTitle) : undefined,
     html: marked.parse(content, { async: false }),
+    body: content.trim(),
   };
 }
 

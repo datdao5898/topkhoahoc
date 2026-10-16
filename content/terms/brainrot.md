@@ -14,6 +14,11 @@ faq:
     a: "Là trào lưu meme năm 2025 gồm các nhân vật AI kỳ quặc với tên giả tiếng Ý như Tralalero Tralala, Tung Tung Tung Sahur, Ballerina Cappuccina."
   - q: "Brainrot có hại thật không?"
     a: "Brainrot là tiếng lóng, không phải thuật ngữ y khoa. Tuy vậy, nhiều nghiên cứu cho thấy lướt nội dung ngắn liên tục có thể làm giảm khả năng tập trung."
+sources:
+  - title: "Oxford Word of the Year 2024: brain rot"
+    url: "https://languages.oup.com/word-of-the-year/2024/"
+  - title: "Brain rot – Wikipedia"
+    url: "https://en.wikipedia.org/wiki/Brain_rot"
 ---
 
 ## Brainrot nghĩa là gì?

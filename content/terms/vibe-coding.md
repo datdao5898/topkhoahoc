@@ -14,6 +14,9 @@ faq:
     a: "Có thể làm các sản phẩm đơn giản. Tuy vậy, để sửa lỗi, bảo mật và vận hành lâu dài thì hiểu biết về lập trình vẫn rất quan trọng."
   - q: "Vibe coder là ai?"
     a: "Là người làm phần mềm chủ yếu bằng cách ra lệnh cho AI thay vì tự viết code."
+sources:
+  - title: "Vibe coding – Wikipedia"
+    url: "https://en.wikipedia.org/wiki/Vibe_coding"
 ---
 
 ## Vibe coding nghĩa là gì?

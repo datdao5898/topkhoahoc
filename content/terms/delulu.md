@@ -15,6 +15,9 @@ faq:
     a: "Câu này nghĩa là “ảo tưởng chính là giải pháp”, ý nói cứ tự tin, lạc quan một cách “hơi quá” để có động lực đạt mục tiêu."
   - q: "Delulu có phải từ xúc phạm không?"
     a: "Thường là không. Delulu hay được dùng để tự trêu mình hoặc đùa với bạn bè, nhưng nói với người lạ có thể bị hiểu là chê họ ảo tưởng."
+sources:
+  - title: "Delulu – Wikipedia"
+    url: "https://en.wikipedia.org/wiki/Delulu"
 ---
 
 ## Delulu nghĩa là gì?

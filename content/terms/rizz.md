@@ -18,6 +18,11 @@ faq:
     a: "W (win) rizz là thả thính thành công, L (loss) rizz là thả thính thất bại hoặc vụng về."
   - q: "Unspoken rizz là gì?"
     a: "Là sức hút không cần lời nói, chỉ bằng ánh mắt, cử chỉ hay phong thái."
+sources:
+  - title: "Oxford Word of the Year 2023: rizz"
+    url: "https://languages.oup.com/word-of-the-year/2023/"
+  - title: "Rizz – Wikipedia"
+    url: "https://en.wikipedia.org/wiki/Rizz"
 ---
 
 ## Rizz nghĩa là gì?

@@ -14,7 +14,7 @@ const beVietnam = Be_Vietnam_Pro({
 export const metadata: Metadata = {
   metadataBase: new URL(SITE.url),
   title: {
-    default: `${SITE.name} – ${SITE.tagline}`,
+    default: `${SITE.name} – Từ điển tiếng lóng, thuật ngữ trending mỗi ngày`,
     template: `%s | ${SITE.name}`,
   },
   description: SITE.description,

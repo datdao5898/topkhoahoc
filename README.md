@@ -24,12 +24,18 @@ Lệnh trên tạo `content/terms/vibe-coding.md` từ mẫu `content/terms/_tem
 - Điền `related` để các trang liên kết với nhau, giúp Google index nhanh hơn.
 - Khi sửa nội dung bài cũ, thêm `updated: YYYY-MM-DD`.
 
-## Có sẵn cho SEO
+## Có sẵn cho SEO & GEO
 
-- Tiêu đề dạng “X là gì? Ý nghĩa của "X" trên mạng xã hội”, canonical, Open Graph
-- Ảnh preview tự sinh cho từng thuật ngữ (`/thuat-ngu/<slug>/opengraph-image`)
-- JSON-LD: DefinedTerm, Article, FAQPage, BreadcrumbList
-- `/sitemap.xml`, `/robots.txt`, `/feed.xml` (RSS: nối vào Zapier/IFTTT/dlvr.it để tự đăng lên Facebook mỗi ngày)
+**SEO (Google):**
+- Tiêu đề dạng “X là gì? Ý nghĩa của "X" trên mạng xã hội”, canonical, Open Graph và ảnh preview tự sinh cho từng thuật ngữ
+- JSON-LD: DefinedTerm, Article (kèm `citation` lấy từ `sources`), FAQPage, BreadcrumbList, Organization, DefinedTermSet
+- `/sitemap.xml`, `/robots.txt`, trang `/gioi-thieu` (quy trình biên tập, tăng độ tin cậy E-E-A-T)
+
+**GEO (ChatGPT, Perplexity, Gemini, Google AI Overviews):**
+- Mỗi bài mở đầu bằng một câu định nghĩa trả lời thẳng, có nguồn tham khảo và ngày cập nhật: dạng nội dung AI hay trích dẫn
+- `/llms.txt` (mục lục cho AI) và `/llms-full.txt` (toàn bộ nội dung Markdown)
+- IndexNow: GitHub Action `.github/workflows/indexnow.yml` chạy 01:30 sáng mỗi ngày, báo bài mới cho Bing (ChatGPT Search dùng index của Bing). Chạy tay: `node scripts/indexnow.mjs --all`
+- `/feed.xml` (RSS): nối vào Zapier/IFTTT/dlvr.it để tự đăng lên Facebook mỗi ngày
 
 ## Chạy local
 

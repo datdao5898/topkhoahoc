@@ -10,6 +10,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   return [
     { url: absoluteUrl("/"), lastModified: latest, changeFrequency: "daily", priority: 1 },
     { url: absoluteUrl("/thuat-ngu"), lastModified: latest, changeFrequency: "daily", priority: 0.8 },
+    { url: absoluteUrl("/gioi-thieu"), changeFrequency: "yearly", priority: 0.3 },
     ...terms.map((t) => ({
       url: absoluteUrl(`/thuat-ngu/${t.slug}`),
       lastModified: t.updated ?? t.date,
