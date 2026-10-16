@@ -24,6 +24,8 @@ export type Term = {
   faq: Faq[];
   sources: Source[];
   seoTitle?: string;
+  /** Bài bổ sung kho từ: không phải "thuật ngữ của ngày". */
+  bonus: boolean;
   html: string;
   /** Nội dung Markdown gốc (dùng cho llms-full.txt). */
   body: string;
@@ -67,6 +69,7 @@ function readTerm(file: string): Term {
       ? data.sources.map((s: { title: unknown; url: unknown }) => ({ title: String(s.title), url: String(s.url) }))
       : [],
     seoTitle: data.seoTitle ? String(data.seoTitle) : undefined,
+    bonus: data.bonus === true,
     html: marked.parse(content, { async: false }),
     body: content.trim(),
   };
@@ -104,6 +107,12 @@ export function getRelatedTerms(term: Term, limit = 4): Term[] {
     if (!picked.includes(t) && t.category === term.category) picked.push(t);
   }
   return picked.slice(0, limit);
+}
+
+/** Thuật ngữ của ngày gần nhất (bỏ qua bài bổ sung). */
+export function getTermOfTheDay(): Term | undefined {
+  const published = getPublishedTerms();
+  return published.find((t) => !t.bonus) ?? published[0];
 }
 
 export function getAdjacentTerms(term: Term) {

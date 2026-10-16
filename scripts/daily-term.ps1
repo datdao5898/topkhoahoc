@@ -38,7 +38,8 @@ if (-not $DryRun -and (Run "git pull --ff-only") -ne 0) { Fail "git pull thất 
 
 function TermsForToday {
   Get-ChildItem content\terms\*.md | Where-Object { $_.Name -notlike "_*" } |
-    Where-Object { Select-String -Path $_.FullName -Pattern "^date:\s*[`"']?$today" -Quiet }
+    Where-Object { Select-String -Path $_.FullName -Pattern "^date:\s*[`"']?$today" -Quiet } |
+    Where-Object { -not (Select-String -Path $_.FullName -Pattern "^bonus:\s*true" -Quiet) }
 }
 
 $existing = TermsForToday

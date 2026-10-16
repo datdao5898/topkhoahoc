@@ -1,14 +1,15 @@
 import Link from "next/link";
 import TermCard from "@/components/TermCard";
 import { formatDate } from "@/lib/format";
-import { getPublishedTerms } from "@/lib/terms";
+import { getPublishedTerms, getTermOfTheDay } from "@/lib/terms";
 import { SITE, absoluteUrl, organizationJsonLd } from "@/lib/site";
 
 // Kiểm tra lại mỗi giờ để thuật ngữ hẹn giờ tự lên trang chủ khi tới ngày.
 export const revalidate = 3600;
 
 export default function HomePage() {
-  const [today, ...recent] = getPublishedTerms();
+  const today = getTermOfTheDay();
+  const recent = getPublishedTerms().filter((t) => t !== today);
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -60,7 +61,7 @@ export default function HomePage() {
       {recent.length > 0 && (
         <section className="mt-12">
           <div className="flex items-end justify-between mb-4">
-            <h2 className="text-2xl font-bold">Những ngày trước</h2>
+            <h2 className="text-2xl font-bold">Thuật ngữ gần đây</h2>
             <Link href="/thuat-ngu" className="text-sm font-semibold text-brand-600 hover:underline">
               Xem tất cả →
             </Link>

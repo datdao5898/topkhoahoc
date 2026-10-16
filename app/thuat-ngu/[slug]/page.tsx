@@ -225,7 +225,7 @@ export default async function TermPage({ params }: Props) {
           <div>
             {older && (
               <Link href={`/thuat-ngu/${older.slug}`} className="block rounded-xl border border-stone-200 bg-white p-4 hover:border-brand-500">
-                <span className="text-stone-500">← Hôm trước</span>
+                <span className="text-stone-500">← Bài trước</span>
                 <span className="block font-bold">{older.term}</span>
               </Link>
             )}
@@ -233,7 +233,7 @@ export default async function TermPage({ params }: Props) {
           <div className="text-right">
             {newer && (
               <Link href={`/thuat-ngu/${newer.slug}`} className="block rounded-xl border border-stone-200 bg-white p-4 hover:border-brand-500">
-                <span className="text-stone-500">Hôm sau →</span>
+                <span className="text-stone-500">Bài sau →</span>
                 <span className="block font-bold">{newer.term}</span>
               </Link>
             )}
