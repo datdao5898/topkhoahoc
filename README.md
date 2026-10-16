@@ -1,36 +1,45 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# TopKhoaHoc – Mỗi ngày một thuật ngữ trending
 
-## Getting Started
+Ai lướt mạng xã hội gặp một từ lạ (rizz, delulu, aura…) rồi Google “… là gì” sẽ vào được trang giải nghĩa của từ đó. Mỗi ngày đăng một thuật ngữ, mỗi thuật ngữ có một trang riêng tại `/thuat-ngu/<slug>`.
 
-First, run the development server:
+**Công nghệ:** Next.js 16 (App Router, trang tĩnh + ISR), Tailwind CSS 4, nội dung là các file Markdown trong `content/terms/`. Không cần database hay CMS.
+
+## Đăng thuật ngữ mới
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm run new -- "Vibe coding"              # tự xếp vào ngày còn trống tiếp theo
+npm run new -- "Vibe coding" 2026-10-20   # hoặc chọn ngày cụ thể
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Lệnh trên tạo `content/terms/vibe-coding.md` từ mẫu `content/terms/_template.md`. Điền nội dung, commit rồi push là xong.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- **Hẹn giờ đăng:** file có `date` ở tương lai sẽ bị ẩn, đến đúng ngày đó (giờ Việt Nam) sẽ tự lên trang trong vòng khoảng 1 giờ, không cần deploy lại. Có thể viết trước cả tuần.
+- **Tên file = URL:** `aura.md` → `/thuat-ngu/aura`. Đã đăng thì đừng đổi tên file (mất thứ hạng Google).
+- **`short` là trường quan trọng nhất:** nó vừa là đoạn định nghĩa đầu trang, vừa là mô tả trên Google, vừa nằm trên ảnh preview khi share lên Facebook.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Mẹo viết để lên top Google
 
-## Learn More
+- `term` viết đúng như người ta gõ trên mạng. Nếu có nhiều cách viết, đưa vào `aliases`.
+- `faq` nên là những câu người ta search kèm, ví dụ “+1000 aura nghĩa là gì?”.
+- Điền `related` để các trang liên kết với nhau, giúp Google index nhanh hơn.
+- Khi sửa nội dung bài cũ, thêm `updated: YYYY-MM-DD`.
 
-To learn more about Next.js, take a look at the following resources:
+## Có sẵn cho SEO
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- Tiêu đề dạng “X là gì? Ý nghĩa của "X" trên mạng xã hội”, canonical, Open Graph
+- Ảnh preview tự sinh cho từng thuật ngữ (`/thuat-ngu/<slug>/opengraph-image`)
+- JSON-LD: DefinedTerm, Article, FAQPage, BreadcrumbList
+- `/sitemap.xml`, `/robots.txt`, `/feed.xml` (RSS: nối vào Zapier/IFTTT/dlvr.it để tự đăng lên Facebook mỗi ngày)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Chạy local
 
-## Deploy on Vercel
+```bash
+npm install
+npm run dev
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Đặt biến môi trường `NEXT_PUBLIC_SITE_URL` nếu domain khác `https://topkhoahoc.online`.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Deploy
+
+Khuyên dùng Vercel: import repo, mỗi lần push lên `main` sẽ tự deploy. Sau khi chạy, khai báo `https://<domain>/sitemap.xml` trong Google Search Console.
