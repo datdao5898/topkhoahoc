@@ -17,6 +17,19 @@ Lệnh trên tạo `content/terms/vibe-coding.md` từ mẫu `content/terms/_tem
 - **Tên file = URL:** `aura.md` → `/thuat-ngu/aura`. Đã đăng thì đừng đổi tên file (mất thứ hạng Google).
 - **`short` là trường quan trọng nhất:** nó vừa là đoạn định nghĩa đầu trang, vừa là mô tả trên Google, vừa nằm trên ảnh preview khi share lên Facebook.
 
+## Tự động viết bài mỗi sáng
+
+Task Scheduler của Windows chạy task **"TopKhoaHoc - Thuat ngu hang ngay"** lúc 8:30 mỗi sáng. Nếu lúc đó máy đang tắt, task chạy ngay khi mở máy. Script `scripts/daily-term.ps1` sẽ:
+
+1. `git pull`. Nếu hôm nay đã có bài (anh tự viết hoặc hẹn trước) thì dừng.
+2. Gọi Claude Code (headless) làm theo `scripts/daily-term-prompt.md`: tìm từ trending, viết bài kèm nguồn.
+3. `npm run build` để kiểm tra, rồi commit + push. Vercel tự deploy.
+
+- Log: `logs/daily-term-YYYY-MM.log`. Nếu lỗi sẽ có popup báo trên màn hình.
+- Chạy thử không đăng: `powershell -ExecutionPolicy Bypass -File scripts\daily-term.ps1 -Date 2026-10-20 -DryRun`
+- Muốn đổi cách chọn từ hay giọng văn: sửa `scripts/daily-term-prompt.md`.
+- Tắt: mở Task Scheduler, chuột phải vào task, chọn Disable.
+
 ## Mẹo viết để lên top Google
 
 - `term` viết đúng như người ta gõ trên mạng. Nếu có nhiều cách viết, đưa vào `aliases`.
