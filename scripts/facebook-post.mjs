@@ -3,6 +3,7 @@
 //   node scripts/facebook-post.mjs                 → thuật ngữ hôm nay (giờ VN)
 //   node scripts/facebook-post.mjs 2026-10-20      → ngày cụ thể
 //   node scripts/facebook-post.mjs --dry-run       → chỉ in nội dung bài, không đăng
+//   node scripts/facebook-post.mjs --all           → mọi thuật ngữ đã lên web (kể cả bài bonus), cũ trước, cách nhau 1 phút
 // Đường dẫn tool: biến môi trường FB_PUBLISHER_DIR, mặc định ../VN Web Studio/automation-post-articles
 // Mỗi thuật ngữ chỉ đăng một lần, ghi lại ở logs/facebook-posted.json.
 import fs from "node:fs";
@@ -13,6 +14,7 @@ import matter from "gray-matter";
 
 const repo = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const dryRun = process.argv.includes("--dry-run");
+const all = process.argv.includes("--all");
 const date = process.argv.slice(2).find((arg) => /^\d{4}-\d{2}-\d{2}$/.test(arg))
   ?? new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Ho_Chi_Minh" }).format(new Date());
 const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://topkhoahoc.online").replace(/\/$/, "");
@@ -23,7 +25,9 @@ const dateOf = (value) => (value instanceof Date ? value.toISOString().slice(0, 
 const terms = fs.readdirSync(termsDir)
   .filter((file) => file.endsWith(".md") && !file.startsWith("_"))
   .map((file) => ({ slug: file.slice(0, -3), ...matter(fs.readFileSync(path.join(termsDir, file), "utf8")).data }))
-  .filter((term) => dateOf(term.date) === date && !term.bonus);
+  .filter((term) => (all ? dateOf(term.date) <= date : dateOf(term.date) === date && !term.bonus))
+  // Cũ trước; cùng ngày thì bài bonus trước, thuật ngữ của ngày sau cùng để nằm trên đầu Page.
+  .sort((a, b) => dateOf(a.date).localeCompare(dateOf(b.date)) || Number(!a.bonus) - Number(!b.bonus) || String(a.term).localeCompare(String(b.term)));
 if (!terms.length) {
   console.log(`Không có thuật ngữ cho ngày ${date}, bỏ qua.`);
   process.exit(0);
@@ -54,6 +58,7 @@ async function waitLive(url, minutes = 15) {
 }
 
 let failed = false;
+let postedThisRun = 0;
 for (const term of terms) {
   if (posted[term.slug]) {
     console.log(`${term.slug}: đã đăng Facebook trước đó (${posted[term.slug].facebookPostId}), bỏ qua.`);
@@ -71,6 +76,9 @@ for (const term of terms) {
     failed = true;
     continue;
   }
+  // Giãn cách khi đăng nhiều bài liền nhau để Facebook không coi là spam.
+  if (postedThisRun > 0) await new Promise((resolve) => setTimeout(resolve, 60_000));
+  postedThisRun++;
   fs.mkdirSync(logsDir, { recursive: true });
   const messageFile = path.join(logsDir, `facebook-${term.slug}.txt`);
   fs.writeFileSync(messageFile, message);
