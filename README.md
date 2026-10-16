@@ -25,6 +25,11 @@ Task Scheduler của Windows chạy task **"TopKhoaHoc - Thuat ngu hang ngay"** 
 2. Gọi Claude Code (headless) làm theo `scripts/daily-term-prompt.md`: tìm từ trending, viết bài kèm nguồn.
 3. `npm run build` để kiểm tra, rồi commit + push. Vercel tự deploy.
 
+4. Đăng thuật ngữ lên Facebook Page TopKhoaHoc (`scripts/facebook-post.mjs`). Bước này dùng tool đăng bài chung ở `VN Web Studio/automation-post-articles`. Script chờ Vercel deploy xong rồi mới đăng, để bài có ảnh xem trước. Mỗi thuật ngữ chỉ đăng một lần, ghi ở `logs/facebook-posted.json`.
+   - Lần đầu: mở tool (`npm start` trong automation-post-articles, vào http://localhost:8655), bấm **Kết nối Facebook**, tích chọn Page TopKhoaHoc, rồi chọn Page đó cho dự án TopKhoaHoc.
+   - Xem trước nội dung bài: `node scripts/facebook-post.mjs --dry-run`. Đăng lại tay: `node scripts/facebook-post.mjs 2026-10-20`.
+   - Tool nằm chỗ khác thì đặt biến môi trường `FB_PUBLISHER_DIR`.
+
 - Log: `logs/daily-term-YYYY-MM.log`. Nếu lỗi sẽ có popup báo trên màn hình.
 - Chạy thử không đăng: `powershell -ExecutionPolicy Bypass -File scripts\daily-term.ps1 -Date 2026-10-20 -DryRun`
 - Muốn đổi cách chọn từ hay giọng văn: sửa `scripts/daily-term-prompt.md`.
@@ -48,7 +53,7 @@ Task Scheduler của Windows chạy task **"TopKhoaHoc - Thuat ngu hang ngay"** 
 - Mỗi bài mở đầu bằng một câu định nghĩa trả lời thẳng, có nguồn tham khảo và ngày cập nhật: dạng nội dung AI hay trích dẫn
 - `/llms.txt` (mục lục cho AI) và `/llms-full.txt` (toàn bộ nội dung Markdown)
 - IndexNow: GitHub Action `.github/workflows/indexnow.yml` chạy 01:30 sáng mỗi ngày, báo bài mới cho Bing (ChatGPT Search dùng index của Bing). Chạy tay: `node scripts/indexnow.mjs --all`
-- `/feed.xml` (RSS): nối vào Zapier/IFTTT/dlvr.it để tự đăng lên Facebook mỗi ngày
+- `/feed.xml` (RSS): cho Telegram, Zalo… (Facebook đã tự đăng qua `scripts/facebook-post.mjs`)
 
 ## Chạy local
 

@@ -42,9 +42,21 @@ function TermsForToday {
     Where-Object { -not (Select-String -Path $_.FullName -Pattern "^bonus:\s*true" -Quiet) }
 }
 
+# Đăng thuật ngữ lên Facebook Page TopKhoaHoc qua tool đăng bài chung (VN Web Studio/automation-post-articles).
+# Script tự chờ Vercel deploy xong và không đăng trùng. Lỗi ở bước này chỉ báo, bài trên web vẫn giữ.
+function PostFacebook {
+  if ($DryRun) { Run "node scripts/facebook-post.mjs $today --dry-run" | Out-Null; return }
+  Log "Đăng Facebook..."
+  if ((Run "node scripts/facebook-post.mjs $today") -ne 0) {
+    Log "LỖI: chưa đăng được Facebook. Chạy lại: node scripts/facebook-post.mjs $today"
+    msg $env:USERNAME "TopKhoaHoc: bài đã lên web nhưng chưa đăng được Facebook. Xem log: $Log" 2>$null
+  }
+}
+
 $existing = TermsForToday
 if ($existing) {
-  Log "Đã có bài cho hôm nay ($($existing.Name -join ', ')), bỏ qua."
+  Log "Đã có bài cho hôm nay ($($existing.Name -join ', ')), bỏ qua bước viết bài."
+  PostFacebook
   exit 0
 }
 
@@ -79,6 +91,7 @@ if ((Run "npm run build") -ne 0) {
 
 if ($DryRun) {
   Log "DryRun: build OK, bỏ qua commit/push. File: $($new.FullName -join ', ')"
+  PostFacebook
   exit 0
 }
 
@@ -91,3 +104,4 @@ if ((Run "git commit -q -F `"$msgFile`"") -ne 0) { Fail "git commit thất bại
 if ((Run "git push origin main") -ne 0) { Fail "git push thất bại" }
 
 Log "Đã đăng: $names. Vercel sẽ deploy trong vài phút."
+PostFacebook
