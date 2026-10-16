@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Logo from "@/components/Logo";
 import { SITE } from "@/lib/site";
 
 export default function Footer() {
@@ -6,8 +7,8 @@ export default function Footer() {
     <footer className="border-t border-stone-200 bg-white mt-16">
       <div className="max-w-5xl mx-auto px-4 py-10 flex flex-col md:flex-row gap-6 md:items-center md:justify-between text-sm text-stone-500">
         <div>
-          <p className="font-bold text-stone-800">{SITE.name}</p>
-          <p>{SITE.tagline}. Thấy từ lạ trên mạng? Tra ở đây.</p>
+          <Logo size={28} />
+          <p className="mt-2">{SITE.tagline}. Thấy từ lạ trên mạng? Tra ở đây.</p>
         </div>
         <nav className="flex gap-5">
           <Link href="/thuat-ngu" className="hover:text-brand-600">

@@ -49,7 +49,14 @@ export async function renderOgImage({ eyebrow, title, subtitle }: { eyebrow: str
           </div>
         </div>
         <div style={{ display: "flex", justifyContent: "space-between", fontSize: 28, fontWeight: 800 }}>
-          <span>{SITE.url.replace(/^https?:\/\//, "")}</span>
+          <span style={{ display: "flex", alignItems: "center", gap: 14 }}>
+            <svg width="44" height="44" viewBox="0 0 32 32">
+              <path d="M7 2.5h18a5 5 0 0 1 5 5v13a5 5 0 0 1-5 5H15l-6.5 4.5v-4.5H7a5 5 0 0 1-5-5v-13a5 5 0 0 1 5-5z" fill="#fff" />
+              <path d="M12.6 10.6a3.6 3.6 0 1 1 5.1 3.3c-1.1.5-1.7 1.3-1.7 2.5v.6" fill="none" stroke="#ea580c" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" />
+              <circle cx="16" cy="21" r="1.75" fill="#ea580c" />
+            </svg>
+            {SITE.url.replace(/^https?:\/\//, "")}
+          </span>
           <span style={{ opacity: 0.85, fontWeight: 500 }}>{SITE.tagline}</span>
         </div>
       </div>
