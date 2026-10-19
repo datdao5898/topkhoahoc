@@ -5,7 +5,7 @@ term: "Tên thuật ngữ"
 date: 2026-01-01
 # 1–2 câu định nghĩa, ~150 ký tự. Dùng làm meta description và đoạn Google hay trích dẫn.
 short: "Tên thuật ngữ là ... dùng để chỉ ..."
-# Chủ đề: Gen Z, Mạng xã hội, Công nghệ, Tài chính, Marketing, Đời sống...
+# Chủ đề: Gen Z, Mạng xã hội, Công nghệ, Tài chính, Marketing, Đời sống, Tâm lý học...
 category: Gen Z
 # Cách viết khác, từ ghép mà người ta cũng hay search (không bắt buộc)
 aliases: []
