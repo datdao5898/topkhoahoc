@@ -9,6 +9,14 @@ Từ điển thuật ngữ trending (Next.js, nội dung Markdown trong `content
 1. Viết thuật ngữ, theo hướng dẫn trong `scripts/daily-term-prompt.md`.
 2. Build, commit rồi push. Vercel tự deploy lên https://topkhoahoc.online.
 3. Đăng lên Facebook Page **"Mỗi ngày một thuật ngữ trending"** (id 1477354225450684) bằng `scripts/facebook-post.mjs`.
+4. Làm video dọc cho thuật ngữ rồi đăng Reel, bằng `scripts/daily-video.ps1` (xem `video/README.md`). Lỗi ở bước này không ảnh hưởng 3 bước trên.
+
+## Video thuật ngữ
+
+- Giọng: VieNeu-TTS, preset **"Quang Sơn"**, chạy trên máy, miễn phí. Văn phong trẻ trung, tếu.
+- Storyboard JSON (`logs/video/`) → `video/make.py` → render HyperFrames → `scripts/facebook-video.mjs`.
+- Mỗi thuật ngữ chỉ đăng video một lần, ghi ở `logs/facebook-videos.json`, tách khỏi `logs/facebook-posted.json` của bài viết.
+- Sửa cách dựng cảnh: `video/make.py`. Sửa cách viết kịch bản: `scripts/daily-video-prompt.md`.
 
 ## Đăng Facebook
 
@@ -21,7 +29,8 @@ Từ điển thuật ngữ trending (Next.js, nội dung Markdown trong `content
 - Xem trước nội dung bài, không đăng: `node scripts/facebook-post.mjs --dry-run`.
 - Đăng bài tuỳ ý (không phải thuật ngữ):
   - Ghi nội dung vào một file rồi chạy trong thư mục tool:
-    `node server/scripts/post.mjs --project topkhoahoc --message-file <file> [--link <url>] [--title "..."] [--draft]`
+    `node server/scripts/post.mjs --project topkhoahoc --message-file <file> [--link <url>] [--video <file.mp4>] [--title "..."] [--draft]`
+  - `--video` đăng file mp4 dọc thành Reel.
   - Lệnh này **đăng công khai ngay**, nên chỉ chạy khi người dùng yêu cầu. Muốn thử thì dùng `--draft` (bài nằm trên Page nhưng không ai thấy).
 - Sửa nội dung bài Facebook (câu mở, ví dụ, hashtag): sửa hàm `caption()` trong `scripts/facebook-post.mjs`.
 - Lỗi "chưa có Facebook Page": mở tool (`npm start` trong automation-post-articles, vào http://localhost:8655) rồi bấm **Kết nối / xác thực lại Facebook**, tích Page TopKhoaHoc.

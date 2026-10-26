@@ -51,6 +51,14 @@ function PostFacebook {
     Log "LỖI: chưa đăng được Facebook. Chạy lại: node scripts/facebook-post.mjs $today"
     msg $env:USERNAME "TopKhoaHoc: bài đã lên web nhưng chưa đăng được Facebook. Xem log: $Log" 2>$null
   }
+  MakeVideo
+}
+
+# Làm video dọc cho thuật ngữ và đăng Reel (scripts/daily-video.ps1, chạy tiến trình riêng, tự ghi log).
+function MakeVideo {
+  $videoArgs = @("-ExecutionPolicy", "Bypass", "-File", (Join-Path $PSScriptRoot "daily-video.ps1"), "-Date", $today)
+  if ($DryRun) { $videoArgs += "-DryRun" }
+  & powershell @videoArgs | Out-Null
 }
 
 $existing = TermsForToday
