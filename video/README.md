@@ -11,6 +11,17 @@ Video dọc 1080×1920, 55–85 giây, giọng nam VieNeu-TTS "Quang Sơn", dự
 
 `scripts/daily-video.ps1` chạy cả 4 bước; `daily-term.ps1` gọi nó sau khi đăng bài 8:30.
 
+## Kiểu chuyển động "pop"
+
+Thêm `"motion": "pop"` vào storyboard để dựng kiểu sinh động hơn (mặc định `classic`, job hằng ngày không đổi):
+
+- Chuyển cảnh xoay vòng: sọc chéo quét, vòng tròn bung, cảnh cũ xoay thu nhỏ.
+- Tim, sao, vòng tròn trang trí bay lơ lửng; khung hình zoom chậm suốt cảnh và rung nhẹ khi con dấu hay tên thuật ngữ đập xuống.
+- Chữ nảy vào (back/elastic/bounce) thay vì hiện mờ dần; tên thuật ngữ rơi từ trên xuống từng chữ.
+- Phụ đề hiện từng chữ, chữ đang đọc đổi màu vàng.
+
+Cảnh `morph` (dùng được ở cả hai kiểu) minh hoạ đổi chữ/đọc lệch âm: `title` của cảnh; beat có `from` + `to` (tối đa 3 hàng: chữ gốc bị gạch, mũi tên, chữ mới rơi vào ô) hoặc `stamp`. Ví dụ: `logs/video/2026-10-16-ong-cha-hui-ba-cha-hom.json`.
+
 ## Lệnh tay
 
 ```powershell

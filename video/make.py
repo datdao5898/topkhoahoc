@@ -13,9 +13,9 @@ MAX_SPEECH = 84.0  # giây; dài hơn thì đọc nhanh lên, tối đa x1.15
 END_HOLD = 3.0  # giữ thẻ cuối sau câu cuối
 
 TONES = {"amber": "#f4b63f", "red": "#e8412c", "pink": "#f6d5cc", "green": "#e3ecdf", "sage": "#a9d6bd", "cream": "#efe9df"}
-DEFAULT_TONE = {"phone": "amber", "reveal": "red", "timeline": "amber", "big": "pink", "chat": "green", "outro": "amber"}
+DEFAULT_TONE = {"phone": "amber", "reveal": "red", "timeline": "amber", "big": "pink", "chat": "green", "morph": "amber", "outro": "amber"}
 INK, CREAM, ALERT = "#17140f", "#fff4e0", "#e8412c"
-LIMITS = {"phone": 8, "reveal": 5, "timeline": 6, "big": 7, "chat": 7, "outro": 3}
+LIMITS = {"phone": 8, "reveal": 5, "timeline": 6, "big": 7, "chat": 7, "morph": 5, "outro": 3}
 
 
 def fail(msg):
@@ -42,6 +42,8 @@ def load(path):
         fail("cần 4–9 cảnh")
     if sb["scenes"][-1]["type"] != "outro":
         fail("cảnh cuối phải là 'outro'")
+    if sb.get("motion", "classic") not in ("classic", "pop"):
+        fail("motion chỉ nhận 'classic' hoặc 'pop'")
     for i, sc in enumerate(sb["scenes"], 1):
         t = sc.get("type")
         if t not in LIMITS:
@@ -61,6 +63,8 @@ def load(path):
             fail(f"cảnh {i}: timeline tối đa 3 mốc")
         if t == "outro" and sum(1 for b in sc["beats"] if b.get("line")) > 2:
             fail(f"cảnh {i}: outro tối đa 2 'line'")
+        if t == "morph" and (sum(1 for b in sc["beats"] if b.get("from")) > 3 or any(b.get("from") and not b.get("to") for b in sc["beats"])):
+            fail(f"cảnh {i}: morph tối đa 3 cặp 'from' + 'to'")
     return sb
 
 
@@ -155,7 +159,7 @@ def caption_groups(text):
     return [" ".join(g) for g in groups]
 
 
-def captions_html(beats):
+def captions_html(beats, pop=False):
     items = []
     for _, b in beats:
         groups = caption_groups(b.get("cap") or b["say"])
@@ -173,9 +177,23 @@ def captions_html(beats):
         if i + 1 < len(items):
             en = min(en, items[i + 1][1] - 0.07)
         en = max(en, st + 0.5)
-        marks.append(f'    <div id="cap-{i}" class="cap"><span class="cap-t">{esc(text)}</span></div>')
-        js += [f'    tl.set("#cap-{i}", {{ opacity: 1, visibility: "visible" }}, {r(st)});',
-               f'    tl.fromTo("#cap-{i} .cap-t", {{ opacity: 0, scale: 0.96 }}, {{ opacity: 1, scale: 1, duration: 0.12, ease: "power2.out" }}, {r(st)});',
+        js.append(f'    tl.set("#cap-{i}", {{ opacity: 1, visibility: "visible" }}, {r(st)});')
+        if pop:
+            words = text.split()
+            marks.append(f'    <div id="cap-{i}" class="cap"><span class="cap-t">' + " ".join(f'<span id="cap-{i}-{k}" class="w">{esc(w)}</span>' for k, w in enumerate(words)) + '</span></div>')
+            js += [f'    tl.fromTo("#cap-{i} .cap-t", {{ opacity: 0, scale: 0.8, rotation: {-2 if i % 2 else 2} }}, {{ opacity: 1, scale: 1, rotation: 0, duration: 0.3, ease: "back.out(2.4)" }}, {r(st)});',
+                   f'    tl.fromTo("#cap-{i} .w", {{ opacity: 0, y: 26, scale: 0.6 }}, {{ opacity: 1, y: 0, scale: 1, duration: 0.24, ease: "back.out(2.6)", stagger: {r(min(0.04, 0.3 / len(words)))} }}, {r(st)});']
+            total_w = sum(syllables(w) for w in words)
+            acc = 0
+            for k, w in enumerate(words):
+                ws = s + (e - s) * acc / total_w
+                acc += syllables(w)
+                js += [f'    tl.set("#cap-{i}-{k}", {{ color: "{TONES["amber"]}" }}, {r(max(st, ws))});',
+                       f'    tl.set("#cap-{i}-{k}", {{ color: "{CREAM}" }}, {r(max(st, s + (e - s) * acc / total_w) + 0.12)});']
+        else:
+            marks.append(f'    <div id="cap-{i}" class="cap"><span class="cap-t">{esc(text)}</span></div>')
+            js.append(f'    tl.fromTo("#cap-{i} .cap-t", {{ opacity: 0, scale: 0.96 }}, {{ opacity: 1, scale: 1, duration: 0.12, ease: "power2.out" }}, {r(st)});')
+        js += [
                f'    tl.to("#cap-{i}", {{ opacity: 0, duration: 0.08, ease: "power2.in" }}, {r(en - 0.08)});',
                f'    tl.set("#cap-{i}", {{ opacity: 0, visibility: "hidden" }}, {r(en)});']
     return f'''<template>
@@ -183,6 +201,7 @@ def captions_html(beats):
 {FONTS}
     #root {{ position: absolute; inset: 0; }}
     .cap {{ position: absolute; left: 0; right: 0; top: 1150px; height: 170px; display: flex; align-items: center; justify-content: center; opacity: 0; visibility: hidden; overflow: visible; }}
+    .cap-t .w {{ display: inline-block; }}
     .cap-t {{ display: inline-block; max-width: 840px; text-align: center; font-family: "BVP"; font-weight: 800; font-size: 52px; line-height: 1.22; color: {CREAM}; background: rgba(23,20,15,0.86); padding: 14px 30px 18px; border-radius: 22px; }}
   </style>
   <div id="root" data-composition-id="captions" data-width="1080" data-height="1920" data-layout-allow-caption-zone>
@@ -207,13 +226,25 @@ PHONE_CSS = (HERE / "phone.css").read_text(encoding="utf-8")
 FEED = (HERE / "feed.html").read_text(encoding="utf-8")
 
 
+# motion "pop": hình trang trí bay lơ lửng (x, y, cỡ, loại, góc), nằm sát mép để chừa chỗ cho chữ
+DECO = [(40, 40, 110, "heart", -12), (900, 110, 90, "spark", 0), (950, 560, 140, "ring", 0), (30, 720, 80, "spark", 15),
+        (900, 1000, 120, "heart", 14), (70, 1040, 150, "squig", -8), (780, 1440, 100, "spark", 0), (130, 1520, 130, "ring", 0),
+        (930, 1700, 110, "heart", -10), (440, 1790, 90, "spark", 20)]
+SHAPES = {"heart": '<path d="M50 88C20 66 4 48 4 30C4 16 15 6 28 6C38 6 46 12 50 20C54 12 62 6 72 6C85 6 96 16 96 30C96 48 80 66 50 88Z" fill="{c}"/>',
+          "spark": '<path d="M50 0C54 36 64 46 100 50C64 54 54 64 50 100C46 64 36 54 0 50C36 46 46 36 50 0Z" fill="{c}"/>',
+          "ring": '<circle cx="50" cy="50" r="38" fill="none" stroke="{c}" stroke-width="12"/>',
+          "squig": '<path d="M6 50Q20 18 34 50T62 50T94 50" fill="none" stroke="{c}" stroke-width="11" stroke-linecap="round"/>'}
+
+
 class Scene:
-    def __init__(self, sid, sc, start, prev_ground):
+    def __init__(self, sid, sc, start, prev_ground, pop=False, dur=0.0, idx=0):
         self.id, self.sc, self.start = sid, sc, start
         self.ground = TONES[sc.get("tone") or DEFAULT_TONE[sc["type"]]]
         self.prev = prev_ground
         self.css, self.html, self.js = [], [], []
         self.sfx = []  # (file, abs_time_of_hit, volume)
+        self.pop, self.dur, self.idx = pop, dur, idx
+        self.back, self.front = [], []  # pop: lớp dưới / trên khung "camera" chứa nội dung
 
     def t(self, b, off=0.0):
         return max(0.0, b["_start"] - self.start + off)
@@ -223,6 +254,8 @@ class Scene:
 
     def enter(self, style):
         p = self.id
+        if self.pop:
+            return self.pop_enter()
         if self.prev is None:
             return self.ground
         if style == "flood":
@@ -236,10 +269,66 @@ class Scene:
         self.js.insert(0, f'tl.fromTo("#{p}-in", {{ yPercent: 0 }}, {{ yPercent: {direction}, duration: 0.5, ease: "power3.inOut" }}, 0);')
         return self.ground
 
+    def pop_enter(self):
+        # chuyển cảnh xoay vòng: sọc chéo quét, vòng tròn bung, cảnh cũ xoay thu nhỏ
+        p = self.id
+        self.deco()
+        if self.prev is None:
+            return self.ground
+        self.hit("whoosh.mp3", {"_start": self.start}, 0.35, 0.02)
+        kind = ("stripes", "burst", "spin")[self.idx % 3]
+        if kind == "stripes":
+            self.css += [f"#{p}-in {{ position: absolute; left: -420px; top: -320px; width: 1920px; height: 2560px; transform: rotate(-14deg); }}",
+                         f"#{p}-in i {{ display: block; height: 366px; background: {self.ground}; transform-origin: 0% 50%; }} #{p}-in i:nth-child(even) {{ transform-origin: 100% 50%; }}"]
+            self.back.insert(0, f'<div id="{p}-in" data-layout-ignore>{"<i></i>" * 7}</div>')
+            self.js.insert(0, f'tl.fromTo("#{p}-in i", {{ scaleX: 0 }}, {{ scaleX: 1, duration: 0.5, ease: "expo.inOut", stagger: 0.045 }}, 0);')
+            return self.prev
+        if kind == "burst":
+            rings = [ALERT if self.ground != ALERT else INK, CREAM, self.ground]
+            for j, c in enumerate(rings):
+                self.css.append(f"#{p}-in{j} {{ position: absolute; left: -760px; top: -460px; width: 2600px; height: 2600px; border-radius: 50%; background: {c}; }}")
+                self.back.insert(j, f'<div id="{p}-in{j}" data-layout-ignore></div>')
+                self.js.insert(0, f'tl.fromTo("#{p}-in{j}", {{ scale: 0 }}, {{ scale: 1, duration: 0.55, ease: "power3.inOut" }}, {r(j * 0.09)});')
+            return self.prev
+        self.css.append(f"#{p}-in {{ position: absolute; inset: 0; background: {self.prev}; z-index: 20; }}")
+        self.front.append(f'<div id="{p}-in" data-layout-ignore></div>')
+        self.js.insert(0, f'tl.fromTo("#{p}-in", {{ scale: 1, rotation: 0, borderRadius: "0%" }}, {{ scale: 0, rotation: -35, borderRadius: "50%", duration: 0.6, ease: "back.in(1.3)" }}, 0);')
+        return self.ground
+
+    def deco(self):
+        p = self.id
+        dark = self.ground == TONES["red"]
+        colors = ("rgba(255,244,224,0.35)", "rgba(23,20,15,0.22)") if dark else ("rgba(255,255,255,0.6)", "rgba(23,20,15,0.1)")
+        self.css.append(f".{p}-dc {{ position: absolute; }} .{p}-dc svg {{ display: block; width: 100%; height: 100%; overflow: visible; }}")
+        start = 0.6 if self.prev else 0.2
+        for j, (x, y, size, kind, rot) in enumerate(DECO):
+            shape = SHAPES[kind].format(c=colors[j % 2])
+            self.back.append(f'<div id="{p}-dc{j}" class="{p}-dc" style="left:{x}px;top:{y}px;width:{size}px;height:{size}px" data-layout-ignore><svg id="{p}-dv{j}" viewBox="0 0 100 100">{shape}</svg></div>')
+            self.js.append(f'tl.fromTo("#{p}-dv{j}", {{ scale: 0, rotation: {rot - 120} }}, {{ scale: 1, rotation: {rot}, duration: 0.6, ease: "back.out(2.2)" }}, {r(start + j * 0.05)});')
+            d = 1.5 + (j % 4) * 0.35
+            reps = max(0, int((self.dur - start - 0.8) / d) - 1)
+            if reps:
+                amp = (18 + (j % 3) * 10) * (1 if j % 2 else -1)
+                self.js.append(f'tl.fromTo("#{p}-dc{j}", {{ y: 0, rotation: 0 }}, {{ y: {amp}, rotation: {12 if j % 2 else -12}, duration: {r(d)}, ease: "sine.inOut", yoyo: true, repeat: {reps} }}, {r(start + 0.6)});')
+
+    def shake(self, at, amp=14):
+        if self.pop:
+            self.js.append(f'tl.fromTo("#{self.id}-cam", {{ x: 0, rotation: 0 }}, {{ x: {amp}, rotation: 0.6, duration: 0.05, ease: "none", yoyo: true, repeat: 5, immediateRender: false }}, {r(at)});')
+
     def blur_in(self, sel, at, dur=0.2):
+        if self.pop:
+            self.js.append(f'tl.fromTo("{sel}", {{ opacity: 0, scale: 0.3, rotation: -8, y: 40 }}, {{ opacity: 1, scale: 1, rotation: 0, y: 0, duration: 0.6, ease: "back.out(2.2)" }}, {r(at)});')
+            return
         self.js.append(f'tl.fromTo("{sel}", {{ opacity: 0, filter: "blur(8px)" }}, {{ opacity: 1, filter: "blur(0px)", duration: {dur}, ease: "power4.out" }}, {r(at)});')
 
     def doc(self, root_bg, ink):
+        html, js = self.html, self.js
+        if self.pop:
+            p = self.id
+            self.css.append(f"#{p}-cam {{ position: absolute; inset: 0; transform-origin: 50% 45%; }}")
+            html = self.back + [f'<div id="{p}-cam" data-layout-allow-overflow>'] + html + ["</div>"] + self.front
+            js = [j.replace('"expo.out"', '"back.out(1.8)"') for j in js]
+            js.append(f'tl.fromTo("#{p}-cam", {{ scale: 1 }}, {{ scale: 1.045, duration: {r(self.dur)}, ease: "none" }}, 0);')
         return f'''<template>
   <style>
 {FONTS}
@@ -248,11 +337,11 @@ class Scene:
     {chr(10).join("    " + c for c in self.css).strip()}
   </style>
   <div id="root" data-composition-id="{self.id}" data-width="1080" data-height="1920">
-    {chr(10).join("    " + h for h in self.html).strip()}
+    {chr(10).join("    " + h for h in html).strip()}
   </div>
   <script>
     const tl = gsap.timeline({{ paused: true }});
-    {chr(10).join("    " + j for j in self.js).strip()}
+    {chr(10).join("    " + j for j in js).strip()}
     window.__timelines["{self.id}"] = tl;
   </script>
 </template>
@@ -342,21 +431,40 @@ def scene_reveal(s):
             s.css.append(f"#{p}-w {{ position: absolute; left: 30px; right: 30px; top: {420 + (290 - size) // 2}px; display: flex; flex-wrap: wrap; justify-content: center; font-weight: 900; font-size: {size}px; line-height: 1.02; letter-spacing: -0.03em; }}")
             s.css.append(f"#{p}-w span {{ display: inline-block; }}")
             s.html.append(f'<div id="{p}-w">{spans}</div>')
-            s.js.append(f'tl.fromTo("#{p}-w span", {{ opacity: 0, scale: 1.5, filter: "blur(10px)" }}, {{ opacity: 1, scale: 1, filter: "blur(0px)", duration: 0.45, ease: "expo.out", stagger: 0.07 }}, {r(at)});')
-            s.hit("impact-bass-1.mp3", b, 0.1, -0.05)
+            if s.pop:
+                # từng chữ rơi từ trên xuống, nảy, rồi rung khung
+                last = 0.1 * (len(unit) - 1)
+                s.js.append(f'tl.fromTo("#{p}-w span", {{ opacity: 0, y: -560, rotation: (i) => (i % 2 ? 28 : -28) }}, {{ opacity: 1, y: 0, rotation: 0, duration: 0.75, ease: "bounce.out", stagger: 0.1 }}, {r(at)});')
+                s.shake(at + 0.45 + last, 18)
+                s.hit("impact-bass-1.mp3", b, 0.2, 0.4 + last)
+            else:
+                s.js.append(f'tl.fromTo("#{p}-w span", {{ opacity: 0, scale: 1.5, filter: "blur(10px)" }}, {{ opacity: 1, scale: 1, filter: "blur(0px)", duration: 0.45, ease: "expo.out", stagger: 0.07 }}, {r(at)});')
+                s.hit("impact-bass-1.mp3", b, 0.1, -0.05)
             word = w
         if b.get("full"):
             s.css.append(f"#{p}-f {{ position: absolute; left: 40px; right: 40px; top: 770px; display: flex; flex-wrap: wrap; justify-content: center; gap: 0 22px; font-size: 64px; font-weight: 500; }}")
             s.css.append(f"#{p}-f span {{ display: inline-block; color: {ink}; opacity: 0.85; }} #{p}-f b {{ font-weight: 900; }}")
             s.html.append(f'<div id="{p}-f">{initials_html(word, b["full"])}</div>')
-            s.js.append(f'tl.fromTo("#{p}-f span", {{ opacity: 0, filter: "blur(6px)" }}, {{ opacity: 0.9, filter: "blur(0px)", duration: 0.15, ease: "power2.out", stagger: 0.2 }}, {r(at)});')
+            if s.pop:
+                s.js.append(f'tl.fromTo("#{p}-f span", {{ opacity: 0, scale: 0, rotation: 14 }}, {{ opacity: 0.9, scale: 1, rotation: 0, duration: 0.5, ease: "back.out(2.4)", stagger: 0.12 }}, {r(at)});')
+                s.hit("pop.mp3", b, 0.35, 0.0)
+            else:
+                s.js.append(f'tl.fromTo("#{p}-f span", {{ opacity: 0, filter: "blur(6px)" }}, {{ opacity: 0.9, filter: "blur(0px)", duration: 0.15, ease: "power2.out", stagger: 0.2 }}, {r(at)});')
         if b.get("meaning"):
             m = str(b["meaning"])
             size = 100 if len(m) <= 18 else 76
             s.css.append(f"#{p}-m {{ position: absolute; left: 60px; right: 60px; top: 920px; text-align: center; font-weight: 900; font-size: {size}px; line-height: 1.1; letter-spacing: -0.02em; color: {INK}; }}")
+            if s.pop:
+                # vệt bút dạ quang quét ngang sau chữ
+                w = min(960, int(len(m) * size * 0.56 + 70))
+                s.css.append(f"#{p}-mk {{ position: absolute; left: {(1080 - w) // 2}px; top: {920 + int(size * 0.1)}px; width: {w}px; height: {size}px; background: {CREAM}; border-radius: 18px; transform: rotate(-2deg); transform-origin: 0% 50%; }}")
+                s.html.append(f'<div id="{p}-mk"></div>')
+                s.js.append(f'tl.fromTo("#{p}-mk", {{ scaleX: 0 }}, {{ scaleX: 1, duration: 0.4, ease: "power3.out" }}, {r(at)});')
+                at += 0.2
             s.html.append(f'<div id="{p}-m">{esc(m)}</div>')
             s.js.append(f'tl.fromTo("#{p}-m", {{ opacity: 0, y: 30 }}, {{ opacity: 1, y: 0, duration: 0.5, ease: "expo.out" }}, {r(at)});')
-    s.hit("whoosh.mp3", {"_start": s.start}, 0.3, -0.12)
+    if not s.pop:
+        s.hit("whoosh.mp3", {"_start": s.start}, 0.3, -0.12)
     return s.doc(root_bg, ink)
 
 
@@ -404,6 +512,7 @@ def scene_timeline(s):
             s.html.append(f'<div class="{p}-st" style="left:0;right:0;top:{min(top, 980)}px;text-align:center;transform:rotate(-5deg)"><div id="{p}-s0" class="{p}-stamp" style="font-size:72px;border-width:8px">{esc(b["stamp"])}</div></div>')
             s.js.append(f'tl.fromTo("#{p}-s0", {{ opacity: 0, scale: 2 }}, {{ opacity: 1, scale: 1, duration: 0.3, ease: "back.out(1.6)" }}, {r(at)});')
             s.hit("pop.mp3", b, 0.5, -0.1)
+            s.shake(at + 0.2)
         elif b.get("stamp"):
             for j, (x, y, rot) in enumerate(STAMPS):
                 s.html.append(f'<div class="{p}-st" style="left:{x}px;top:{y}px;transform:rotate({rot}deg)" data-layout-allow-overlap data-layout-ignore><div id="{p}-s{j}" class="{p}-stamp">{esc(b["stamp"])}</div></div>')
@@ -469,6 +578,7 @@ def scene_big(s):
                 s.html.append(f'<div class="{p}-it" style="top:{y + 40}px;transform:rotate(-6deg)"><div id="{eid}" style="display:inline-block;padding:10px 34px 16px;border:10px solid {ALERT};border-radius:22px;color:{ALERT};font-weight:900;font-size:{92 if len(str(v)) <= 14 else 66}px;line-height:1.1">{esc(v)}</div></div>')
                 s.js.append(f'tl.fromTo("#{eid}", {{ opacity: 0, scale: 2.2 }}, {{ opacity: 1, scale: 1, duration: 0.3, ease: "back.out(1.6)" }}, {r(at)});')
                 s.hit("pop.mp3", b, 0.5, -0.1)
+                s.shake(at + 0.2)
             cur.append((eid, kind))
             y += h
     return s.doc(root_bg, INK)
@@ -483,8 +593,8 @@ def scene_chat(s):
               f"#{p}-col {{ position: absolute; left: 0; right: 0; top: 0; }}",
               f"#{p}-clip {{ position: absolute; left: 0; right: 0; top: 320px; height: 810px; overflow: hidden; }}",
               f".{p}-b {{ position: absolute; max-width: 760px; padding: 18px 28px 22px; border-radius: 34px; font-weight: 500; font-size: 44px; line-height: 1.25; }}",
-              f".{p}-L {{ left: 60px; background: #fff; border-bottom-left-radius: 10px; }}",
-              f".{p}-R {{ right: 60px; background: {INK}; color: {CREAM}; border-bottom-right-radius: 10px; }}",
+              f".{p}-L {{ left: 60px; background: #fff; border-bottom-left-radius: 10px; transform-origin: 0% 100%; }}",
+              f".{p}-R {{ right: 60px; background: {INK}; color: {CREAM}; border-bottom-right-radius: 10px; transform-origin: 100% 100%; }}",
               f".{p}-nm {{ display: block; font-weight: 800; font-size: 30px; color: #6a6257; margin-bottom: 4px; }}"]
     s.html.append(f'<div id="{p}-hd"><i></i>{esc(title)}</div><div id="{p}-clip" data-layout-allow-overflow><div id="{p}-col">')
     y, k, shift = 20, 0, 0
@@ -502,7 +612,10 @@ def scene_chat(s):
         if y + h - shift > 790:
             shift = y + h - 790
             s.js.append(f'tl.to("#{p}-col", {{ y: {-shift}, duration: 0.45, ease: "power3.out" }}, {r(at)});')
-        s.js.append(f'tl.fromTo("#{p}-b{k}", {{ opacity: 0, y: 40, scale: 0.94 }}, {{ opacity: 1, y: 0, scale: 1, duration: 0.45, ease: "expo.out" }}, {r(at)});')
+        if s.pop:
+            s.js.append(f'tl.fromTo("#{p}-b{k}", {{ opacity: 0, y: 60, scale: 0.2, rotation: {-7 if side == "L" else 7} }}, {{ opacity: 1, y: 0, scale: 1, rotation: 0, duration: 0.6, ease: "back.out(2.2)" }}, {r(at)});')
+        else:
+            s.js.append(f'tl.fromTo("#{p}-b{k}", {{ opacity: 0, y: 40, scale: 0.94 }}, {{ opacity: 1, y: 0, scale: 1, duration: 0.45, ease: "expo.out" }}, {r(at)});')
         s.hit("click-soft.mp3", b, 0.7, -0.05)
         y += h + 26
         k += 1
@@ -534,11 +647,55 @@ def scene_outro(s, end_local):
     s.html += [f'<div id="{p}-rule"></div>', f'<div id="{p}-k">MỖI NGÀY MỘT THUẬT NGỮ</div>', f'<div id="{p}-url">{spans}</div>']
     s.js += [f'tl.fromTo("#{p}-rule", {{ scaleX: 0 }}, {{ scaleX: 1, duration: 0.5, ease: "expo.out" }}, {r(card - 0.3)});',
              f'tl.fromTo("#{p}-k", {{ opacity: 0 }}, {{ opacity: 1, duration: 0.3, ease: "power2.out" }}, {r(card - 0.2)});',
+             f'tl.fromTo("#{p}-url span", {{ opacity: 0, y: -90 }}, {{ opacity: 1, y: 0, duration: 0.55, ease: "bounce.out", stagger: 0.03 }}, {r(card)});' if s.pop else
              f'tl.fromTo("#{p}-url span", {{ opacity: 0 }}, {{ opacity: 1, duration: 0.01, stagger: 0.03 }}, {r(card)});']
     return s.doc(root_bg, INK)
 
 
-BUILDERS = {"phone": scene_phone, "reveal": scene_reveal, "timeline": scene_timeline, "big": scene_big, "chat": scene_chat}
+def scene_morph(s):
+    # đọc lệch âm: chữ gốc hiện, bị gạch, mũi tên vẽ ra, chữ mới rơi xuống nảy vào ô
+    p = s.id
+    root_bg = s.enter("down")
+    s.css += [f"#{p}-ti {{ position: absolute; left: 40px; right: 40px; top: 220px; text-align: center; font-weight: 900; font-size: 84px; line-height: 1.05; letter-spacing: -0.02em; }}",
+              f".{p}-fr {{ position: absolute; left: 50px; width: 430px; height: 170px; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 120px; letter-spacing: -0.02em; }}",
+              f".{p}-x {{ position: absolute; left: 60px; right: 60px; top: 50%; height: 14px; margin-top: -4px; border-radius: 7px; background: {ALERT}; transform-origin: 0% 50%; }}",
+              f".{p}-ar {{ position: absolute; left: 470px; width: 140px; height: 170px; }}",
+              f".{p}-to {{ position: absolute; left: 600px; width: 430px; height: 170px; display: flex; align-items: center; justify-content: center; }}",
+              f".{p}-to span {{ display: inline-block; padding: 4px 40px 18px; border-radius: 34px; background: {INK}; color: {CREAM}; font-weight: 900; font-size: 116px; line-height: 1.1; letter-spacing: -0.02em; }}",
+              f"#{p}-st {{ position: absolute; left: 0; right: 0; top: 600px; text-align: center; transform: rotate(-8deg); }}",
+              f"#{p}-st span {{ display: inline-block; padding: 8px 40px 18px; border: 12px solid {ALERT}; border-radius: 26px; color: {ALERT}; background: {CREAM}; font-weight: 900; font-size: 128px; line-height: 1.05; }}"]
+    if s.sc.get("title"):
+        s.html.append(f'<div id="{p}-ti">{esc(s.sc["title"])}</div>')
+        s.blur_in(f"#{p}-ti", 0.35)
+    k = 0
+    for b in s.sc["beats"]:
+        at = s.t(b)
+        if b.get("from"):
+            y = 410 + k * 230
+            s.html += [f'<div id="{p}-fr{k}" class="{p}-fr" style="top:{y}px">{esc(b["from"])}<i id="{p}-x{k}" class="{p}-x"></i></div>',
+                       f'<svg id="{p}-ar{k}" class="{p}-ar" style="top:{y}px" viewBox="0 0 140 170"><path id="{p}-ap{k}" d="M14 85H118M90 55L122 85L90 115" fill="none" stroke="{INK}" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+                       f'<div class="{p}-to" style="top:{y}px"><span id="{p}-to{k}">{esc(b["to"])}</span></div>']
+            s.js += [f'tl.fromTo("#{p}-fr{k}", {{ opacity: 0, scale: 0, rotation: -14 }}, {{ opacity: 1, scale: 1, rotation: 0, duration: 0.5, ease: "back.out(2.2)" }}, {r(at)});',
+                     f'tl.fromTo("#{p}-x{k}", {{ scaleX: 0 }}, {{ scaleX: 1, duration: 0.25, ease: "power2.out" }}, {r(at + 0.5)});',
+                     f'tl.fromTo("#{p}-fr{k}", {{ opacity: 1 }}, {{ opacity: 0.45, duration: 0.25, ease: "power1.out", immediateRender: false }}, {r(at + 0.6)});',
+                     f'tl.fromTo("#{p}-ap{k}", {{ strokeDasharray: 240, strokeDashoffset: 240 }}, {{ strokeDashoffset: 0, duration: 0.4, ease: "power2.out" }}, {r(at + 0.6)});',
+                     f'tl.fromTo("#{p}-to{k}", {{ opacity: 0, y: -300, scale: 0.4, rotation: 22 }}, {{ opacity: 1, y: 0, scale: 1, rotation: 0, duration: 0.9, ease: "elastic.out(1, 0.5)" }}, {r(at + 0.85)});']
+            s.hit("click-soft.mp3", b, 0.6, 0.5)
+            s.hit("pop.mp3", b, 0.45, 0.9)
+            k += 1
+        if b.get("stamp"):
+            # con dấu đập lên giữa các hàng: các hàng lùi lại cho dấu nổi bật
+            s.html.append(f'<div id="{p}-st" data-layout-allow-overlap><span id="{p}-sv">{esc(b["stamp"])}</span></div>')
+            if k:
+                rows = ", ".join(f"#{p}-fr{j}, #{p}-ar{j}, #{p}-to{j}" for j in range(k))
+                s.js.append(f'tl.fromTo("{rows}", {{ opacity: (i, el) => el.id.includes("-fr") ? 0.45 : 1 }}, {{ opacity: 0.2, duration: 0.25, ease: "power2.out", immediateRender: false }}, {r(at - 0.05)});')
+            s.js.append(f'tl.fromTo("#{p}-sv", {{ opacity: 0, scale: 2.4 }}, {{ opacity: 1, scale: 1, duration: 0.32, ease: "back.out(1.6)" }}, {r(at)});')
+            s.hit("pop.mp3", b, 0.55, -0.1)
+            s.shake(at + 0.22, 18)
+    return s.doc(root_bg, INK)
+
+
+BUILDERS = {"morph": scene_morph, "phone": scene_phone, "reveal": scene_reveal, "timeline": scene_timeline, "big": scene_big, "chat": scene_chat}
 
 
 def build(sb, out, beats, speech_end):
@@ -547,16 +704,17 @@ def build(sb, out, beats, speech_end):
     starts = [0.0] + [max(0.0, sc["beats"][0]["_start"] - 0.25) for sc in scenes[1:]]
     ends = starts[1:] + [total]
     hosts, sfx, prev = [], [], None
+    pop = sb.get("motion") == "pop"
     (out / "compositions").mkdir(exist_ok=True)
     for i, sc in enumerate(scenes):
         sid = f"s{i + 1}"
-        s = Scene(sid, sc, starts[i], prev)
+        s = Scene(sid, sc, starts[i], prev, pop, ends[i] - starts[i], i)
         doc = scene_outro(s, ends[i] - starts[i]) if sc["type"] == "outro" else BUILDERS[sc["type"]](s)
         (out / "compositions" / f"{sid}.html").write_text(doc, encoding="utf-8")
         hosts.append(f'      <div id="{sid}" data-composition-id="{sid}" data-composition-src="compositions/{sid}.html" data-start="{r(starts[i])}" data-duration="{r(ends[i] - starts[i])}" data-track-index="1" data-track-kind="graphics" data-width="1080" data-height="1920"></div>')
         sfx += s.sfx
         prev = s.ground
-    (out / "compositions" / "captions.html").write_text(captions_html(beats), encoding="utf-8")
+    (out / "compositions" / "captions.html").write_text(captions_html(beats, pop), encoding="utf-8")
     audio = ['      <audio id="vo" class="clip" src="assets/vo.mp3" data-start="0" data-track-index="3" data-volume="1"></audio>']
     for j, (name, at, vol) in enumerate(sfx):
         audio.append(f'      <audio id="sfx-{j}" class="clip" src="assets/sfx/{name}" data-start="{r(max(0, at))}" data-track-index="{4 + j}" data-volume="{vol}"></audio>')
