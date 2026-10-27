@@ -11,10 +11,39 @@ Giọng đọc là giọng nam (VieNeu-TTS "Quang Sơn"). Máy sẽ đọc từn
 ## Văn phong
 
 - Tiếng Việt, **trẻ trung, tếu, gần gũi**: "nha", "đó", "luôn", "kìa", "á", câu ngắn, có nhịp. Như kể cho bạn nghe chứ không đọc bài giảng.
-- Mở bằng một tình huống người xem nhận ra ngay (tin nhắn, thông báo, một khoảnh khắc đời thường), chưa nói tên thuật ngữ. Gọi tên ở cảnh 2.
+- Mở bằng một câu hook (xem phần "Câu hook mở đầu" bên dưới) và một tình huống người xem nhận ra ngay (tin nhắn, thông báo, một khoảnh khắc đời thường), chưa nói tên thuật ngữ. Gọi tên ở cảnh 2.
 - Kết bằng một câu nhẹ nhàng, có ý nghĩa, không giáo điều.
 - Tổng cộng khoảng **170–230 chữ** trong các `say`. Mỗi `say` là **một câu** (tối đa ~25 chữ).
+- Beat có `bubble` hoặc `notify` mà chữ dài: câu `say` nên đọc luôn nội dung đó ("Hay là: đừng chan tôi, …"), đừng chỉ đọc "Hay là:", nếu không tin nhắn chỉ hiện chưa tới một giây.
 - Trong `say`, viết số bằng chữ để máy đọc đúng ("năm một chín bảy tám", "hơn hai mươi lăm nghìn"); khi đó thêm `cap` là câu hiển thị phụ đề có số ("Năm 1978, …"). Từ tiếng Anh giữ nguyên (máy đọc được).
+
+## Câu hook mở đầu
+
+Người xem quyết định ở lại hay lướt qua trong 1–2 giây đầu, nên **beat đầu tiên phải là hook**: một câu ngắn (≤ 12 chữ), nói thẳng vào tình huống hoặc thắc mắc của người xem, chưa cần nói tên thuật ngữ. Hình của cảnh mở đầu (`phone` / `chat` / `big`) phải minh hoạ đúng câu hook.
+
+Chọn **một** khung dưới đây, thay phần trong ngoặc vuông bằng chi tiết thật của thuật ngữ. Khung chỉ là gợi ý, viết lại cho tự nhiên, xưng "bạn", giữ giọng trẻ trung:
+
+1. Nếu bạn từng [tình huống], thì bạn gặp [hiện tượng] rồi đó.
+2. Đây có phải là bạn không: [tình huống quen thuộc]?
+3. Vì sao [chuyện khó chịu] cứ lặp lại, dù bạn đã [cách xử lý phổ biến]?
+4. [Đối tượng: dân văn phòng / Gen Z / người mới đi làm…] gặp chuyện này hoài mà ít ai gọi được tên.
+5. Nghe [thuật ngữ] tưởng là [hiểu lầm phổ biến], nhưng không phải đâu.
+6. Không phải [quan niệm phổ biến] lúc nào cũng đúng.
+7. Vấn đề không nằm ở [điều dễ bị đổ lỗi], mà ở chỗ này.
+8. Dấu hiệu cho thấy bạn đang [bị / làm] [hiện tượng] mà không biết.
+9. Điều gì xảy ra nếu [tình huống] cứ lặp đi lặp lại?
+10. Cả bảng tin đang nói [thuật ngữ], mà nó thật ra nghĩa là gì?
+11. Trước khi dùng chữ [thuật ngữ], bạn nên biết điều này.
+12. [Thuật ngữ A] với [thuật ngữ B] khác nhau chỗ nào? (chỉ khi file có nhắc thuật ngữ liên quan)
+13. Một [câu nói / vở kịch / bài hát…] từ [năm] mà giờ cả mạng xã hội đang dùng.
+14. Từ [nghĩa gốc bất ngờ] thành [nghĩa bây giờ]: chuyện của một chữ.
+
+Quy tắc:
+
+- **Đổi khung mỗi ngày.** Đọc 3 file mới nhất trong `logs/video/` (theo tên) và không dùng lại khung mà các video đó đã mở đầu.
+- Hook không được bịa: không số liệu, không "tôi đã thử", không hứa hẹn kết quả. Mọi chi tiết thật vẫn phải có trong file thuật ngữ.
+- Không dùng hook kiểu bán hàng ("ưu đãi", "đặt ngay", "inbox").
+- Có thể kết video bằng một lời mời bình luận nhẹ ở beat cuối, ví dụ "Bạn từng gặp chưa, kể nghe với!". Không hứa sẽ làm video trả lời.
 
 ## Định dạng
 

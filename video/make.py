@@ -373,7 +373,9 @@ def scene_timeline(s):
               f"#{p}-line {{ position: absolute; left: 166px; width: 8px; background: {INK}; border-radius: 4px; transform-origin: 50% 0%; }}",
               f".{p}-st {{ position: absolute; }} .{p}-stamp {{ display: inline-block; padding: 4px 18px 8px; border: 6px solid {ALERT}; border-radius: 14px; color: {ALERT}; font-weight: 900; font-size: 54px; line-height: 1.1; background: rgba(244,182,63,0.92); }}"]
     nodes = [b for b in s.sc["beats"] if b.get("year")]
-    ys = [260, 550, 840][:len(nodes)]
+    long_stamp = any(len(str(b.get("stamp", ""))) > 6 for b in s.sc["beats"])
+    # đủ 3 mốc thì không còn chỗ phía dưới: dời các mốc xuống, con dấu chữ dài nằm phía trên
+    ys = ([300, 575, 850] if long_stamp and len(nodes) == 3 else [260, 550, 840])[:len(nodes)]
     if len(nodes) > 1:
         s.html.append(f'<div id="{p}-line" style="top:{ys[0] + 75}px;height:{ys[-1] - ys[0]}px"></div>')
     k = 0
@@ -398,7 +400,7 @@ def scene_timeline(s):
             k += 1
         if b.get("stamp") and len(str(b["stamp"])) > 6:
             # chữ dài: một con dấu lớn ở khoảng trống phía dưới
-            top = (ys[-1] + 420) if ys else 600
+            top = 180 if len(ys) == 3 else (ys[-1] + 420) if ys else 600
             s.html.append(f'<div class="{p}-st" style="left:0;right:0;top:{min(top, 980)}px;text-align:center;transform:rotate(-5deg)"><div id="{p}-s0" class="{p}-stamp" style="font-size:72px;border-width:8px">{esc(b["stamp"])}</div></div>')
             s.js.append(f'tl.fromTo("#{p}-s0", {{ opacity: 0, scale: 2 }}, {{ opacity: 1, scale: 1, duration: 0.3, ease: "back.out(1.6)" }}, {r(at)});')
             s.hit("pop.mp3", b, 0.5, -0.1)
