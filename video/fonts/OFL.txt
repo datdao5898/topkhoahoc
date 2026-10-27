@@ -1,3 +1,4 @@
+Copyright 2020 The Anton Project Authors (https://github.com/googlefonts/AntonFont)
 Copyright 2021 The Be Vietnam Pro Project Authors (https://github.com/bettergui/BeVietnamPro),
 
 This Font Software is licensed under the SIL Open Font License, Version 1.1.

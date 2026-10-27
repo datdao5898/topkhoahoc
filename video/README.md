@@ -20,7 +20,18 @@ Thêm `"motion": "pop"` vào storyboard để dựng kiểu sinh động hơn (m
 - Chữ nảy vào (back/elastic/bounce) thay vì hiện mờ dần; tên thuật ngữ rơi từ trên xuống từng chữ.
 - Phụ đề hiện từng chữ, chữ đang đọc đổi màu vàng.
 
-Cảnh `morph` (dùng được ở cả hai kiểu) minh hoạ đổi chữ/đọc lệch âm: `title` của cảnh; beat có `from` + `to` (tối đa 3 hàng: chữ gốc bị gạch, mũi tên, chữ mới rơi vào ô) hoặc `stamp`. Ví dụ: `logs/video/2026-10-16-ong-cha-hui-ba-cha-hom.json`.
+## Kiểu "tabloid" (báo lá cải / tạp chí showbiz)
+
+`"motion": "tabloid"`: nền giấy báo chấm in, băng "TIN NÓNG" chạy chéo, chữ tên thuật ngữ in viền mờ chạy dưới đáy; tít dùng font Anton in hoa.
+
+- Chuyển cảnh: trang báo mới đập lên, đèn flash, màn trập máy ảnh. Mỗi câu mới khung giật zoom vào/ra.
+- Tên thuật ngữ ghép từ chữ cắt dán (kiểu thư nặc danh) kèm flash paparazzi.
+- Phụ đề hộp đen bóng đỏ, chữ đang đọc nằm trên nền vàng.
+- Cảnh `cover` (bìa tạp chí, tối đa 4 beat): `mast` (tên báo · ngày), `headline` (tít lớn), `emoji`, `note` (dải đỏ cuối bìa), `stamp`.
+
+Ví dụ: `logs/video/2026-10-16-nepo-baby.json`.
+
+Cảnh `morph` (dùng được ở mọi kiểu) minh hoạ đổi chữ/đọc lệch âm: `title` của cảnh; beat có `from` + `to` (tối đa 3 hàng: chữ gốc bị gạch, mũi tên, chữ mới rơi vào ô) hoặc `stamp`. Ví dụ: `logs/video/2026-10-16-ong-cha-hui-ba-cha-hom.json`.
 
 ## Lệnh tay
 
@@ -36,4 +47,4 @@ $py = "C:\Users\datda\Videos\topkhoahoc\voice-samples\vieneu-env\Scripts\python.
 - VieNeu-TTS (miễn phí, chạy trên máy): venv ở `C:\Users\datda\Videos\topkhoahoc\voice-samples\vieneu-env` (`pip install vieneu`). Đổi đường dẫn bằng biến môi trường `VIENEU_PYTHON`.
 - ffmpeg, Node 18+, HyperFrames chạy qua `npx` (bản ghim 0.8.201).
 - Hiệu ứng âm thanh lấy từ skill media-use của HyperFrames (`~/.claude/skills/media-use/audio/assets/sfx`).
-- Font Be Vietnam Pro (SIL OFL, `video/fonts/OFL.txt`).
+- Font Be Vietnam Pro và Anton (đều SIL OFL, `video/fonts/OFL.txt`).
