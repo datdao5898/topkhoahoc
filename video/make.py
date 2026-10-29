@@ -593,7 +593,7 @@ def scene_timeline(s):
     p = s.id
     root_bg = s.enter("up")
     s.css += [f".{p}-dot {{ position: absolute; left: 150px; width: 40px; height: 40px; border-radius: 50%; background: {INK}; }}",
-              f".{p}-y {{ position: absolute; left: 225px; font-weight: 900; font-size: 150px; line-height: 1; letter-spacing: -0.03em; }}",
+              f".{p}-y {{ position: absolute; left: 225px; font-weight: 900; font-size: 150px; line-height: 1; letter-spacing: -0.03em; white-space: nowrap; }}",
               f".{p}-n {{ position: absolute; left: 232px; right: 60px; font-weight: 500; font-size: 42px; line-height: 1.2; color: #3d372f; }}",
               f".{p}-t {{ position: absolute; left: 232px; right: 60px; font-weight: 800; font-size: 56px; line-height: 1.1; }}",
               f"#{p}-line {{ position: absolute; left: 166px; width: 8px; background: {INK}; border-radius: 4px; transform-origin: 50% 0%; }}",
@@ -610,7 +610,9 @@ def scene_timeline(s):
         if b.get("year"):
             y = ys[k]
             s.html.append(f'<div id="{p}-d{k}" class="{p}-dot" style="top:{y + 55}px"></div>')
-            s.html.append(f'<div id="{p}-y{k}" class="{p}-y" style="top:{y}px">{esc(b["year"])}</div>')
+            # mốc dài ("Cuối 10/2026") ở 150px sẽ xuống dòng, đè lên ghi chú: co chữ cho vừa một dòng
+            fs = min(150, int(780 / (0.62 * max(1, len(str(b["year"]))))))
+            s.html.append(f'<div id="{p}-y{k}" class="{p}-y" style="top:{y + (150 - fs) // 2}px;font-size:{fs}px">{esc(b["year"])}</div>')
             s.js.append(f'tl.fromTo("#{p}-d{k}", {{ scale: 0 }}, {{ scale: 1, duration: 0.4, ease: "back.out(1.6)" }}, {r(at)});')
             s.js.append(f'tl.fromTo("#{p}-y{k}", {{ opacity: 0, x: -40 }}, {{ opacity: 1, x: 0, duration: 0.6, ease: "expo.out" }}, {r(at)});')
             if b.get("note"):

@@ -67,7 +67,7 @@ Quy tắc:
 | `phone` | Mở đầu: điện thoại có thông báo | `clock` + `date` (màn khoá, chỉ ở beat đầu; beat sau tự mở khoá) · `notify: {"from","text"}` (tối đa 3–4) · `scroll: true` (lướt feed) · `line` (câu lớn dưới điện thoại, tối đa 2, ≤ 16 ký tự) — 8 beat |
 | `chat` | Tin nhắn, ví dụ cách dùng | `bubble: {"side": "left"/"right", "name": "(chỉ bên trái)", "text"}`; `"title"` của cảnh là tên nhóm/người — 7 beat |
 | `reveal` | Gọi tên thuật ngữ | `kicker` (dòng nhỏ) · `word` (tên thuật ngữ, chữ to) · `full` (tên đầy đủ / tiếng Việt) · `meaning` (nghĩa ngắn ≤ 40 ký tự) — 5 beat |
-| `timeline` | Nguồn gốc theo mốc thời gian | `year` + `note` (dòng nhỏ) + `title` (dòng đậm ≤ 24 ký tự), tối đa 3 mốc · `stamp` (con dấu đỏ) — 6 beat |
+| `timeline` | Nguồn gốc theo mốc thời gian | `year` (ngắn, ưu tiên năm như "2017"; dài thì chữ bị co nhỏ) + `note` (dòng nhỏ) + `title` (dòng đậm ≤ 24 ký tự), tối đa 3 mốc · `stamp` (con dấu đỏ) — 6 beat |
 | `big` | Con số, ý chính, dấu hiệu, so sánh | `top` (+ `sub`): tiêu đề to ≤ 12 ký tự · `number: {"pre","value","label"}` · `head` · `line` · `up` / `down` (mũi tên lên/xuống + chữ) · `stamp` — 7 beat |
 | `outro` | Kết | `line` (tối đa 2) — 3 beat; thẻ "Mỗi ngày một thuật ngữ · topkhoahoc.online" tự thêm |
 
