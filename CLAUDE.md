@@ -9,8 +9,7 @@ Từ điển thuật ngữ trending (Next.js, nội dung Markdown trong `content
 1. Viết thuật ngữ, theo hướng dẫn trong `scripts/daily-term-prompt.md`.
 2. Build, commit rồi push. Vercel tự deploy lên https://topkhoahoc.online.
 3. Đăng lên Facebook Page **"Mỗi ngày một thuật ngữ trending"** (id 1477354225450684) bằng `scripts/facebook-post.mjs`.
-4. Dựng sẵn video dọc cho thuật ngữ bằng `scripts/daily-video.ps1 -NoPost` (xem `video/README.md`). Lỗi ở bước này không ảnh hưởng 3 bước trên.
-5. 20:00 tối, task **"TopKhoaHoc - Dang Reel 20h"** chạy `scripts/daily-video.ps1` để đăng Reel. Đã có `video.mp4` dựng sẵn thì đăng luôn, chưa có thì dựng rồi đăng.
+4. Làm video dọc cho thuật ngữ rồi lên lịch Reel **20:00** hôm đó trên Facebook, bằng `scripts/daily-video.ps1` (xem `video/README.md`). Facebook tự đăng, máy không cần bật buổi tối. Lỗi ở bước này không ảnh hưởng 3 bước trên.
 
 ## Video thuật ngữ
 
@@ -30,8 +29,9 @@ Từ điển thuật ngữ trending (Next.js, nội dung Markdown trong `content
 - Xem trước nội dung bài, không đăng: `node scripts/facebook-post.mjs --dry-run`.
 - Đăng bài tuỳ ý (không phải thuật ngữ):
   - Ghi nội dung vào một file rồi chạy trong thư mục tool:
-    `node server/scripts/post.mjs --project topkhoahoc --message-file <file> [--link <url>] [--video <file.mp4>] [--title "..."] [--draft]`
-  - `--video` đăng file mp4 dọc thành Reel.
+    `node server/scripts/post.mjs --project topkhoahoc --message-file <file> [--link <url>] [--video <file.mp4>] [--schedule <giờ ISO>] [--title "..."] [--draft]`
+  - `--video` đăng file mp4 dọc thành Reel. Thêm `--schedule 2026-10-30T20:00:00+07:00` để Facebook tự đăng đúng giờ (chỉ cho Reel).
+  - Làm video và lên lịch cho một thuật ngữ bất kỳ: `scripts/daily-video.ps1 -Slug <slug> [-At 20:00]`.
   - Lệnh này **đăng công khai ngay**, nên chỉ chạy khi người dùng yêu cầu. Muốn thử thì dùng `--draft` (bài nằm trên Page nhưng không ai thấy).
 - Sửa nội dung bài Facebook (câu mở, ví dụ, hashtag): sửa hàm `caption()` trong `scripts/facebook-post.mjs`.
 - Lỗi "chưa có Facebook Page": mở tool (`npm start` trong automation-post-articles, vào http://localhost:8655) rồi bấm **Kết nối / xác thực lại Facebook**, tích Page TopKhoaHoc.

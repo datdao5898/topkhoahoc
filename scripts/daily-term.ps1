@@ -54,10 +54,9 @@ function PostFacebook {
   MakeVideo
 }
 
-# Dựng sẵn video dọc cho thuật ngữ (scripts/daily-video.ps1, chạy tiến trình riêng, tự ghi log).
-# Reel được đăng lúc 20:00 bởi task "TopKhoaHoc - Dang Reel 20h".
+# Làm video dọc cho thuật ngữ và lên lịch Reel 20:00 trên Facebook (scripts/daily-video.ps1, tiến trình riêng, tự ghi log).
 function MakeVideo {
-  $videoArgs = @("-ExecutionPolicy", "Bypass", "-File", (Join-Path $PSScriptRoot "daily-video.ps1"), "-Date", $today, "-NoPost")
+  $videoArgs = @("-ExecutionPolicy", "Bypass", "-File", (Join-Path $PSScriptRoot "daily-video.ps1"), "-Date", $today)
   if ($DryRun) { $videoArgs += "-DryRun" }
   & powershell @videoArgs | Out-Null
 }

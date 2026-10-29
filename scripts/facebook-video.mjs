@@ -1,6 +1,7 @@
 // Đăng video thuật ngữ (Reel) lên Facebook Page TopKhoaHoc, qua tool đăng bài chung bên VN Web Studio.
 //   node scripts/facebook-video.mjs <thư mục video>            → đăng <thư mục>/video.mp4, mô tả lấy từ storyboard.json
 //   node scripts/facebook-video.mjs <thư mục video> --dry-run  → chỉ in mô tả
+//   node scripts/facebook-video.mjs <thư mục video> --schedule 2026-10-30T20:00:00+07:00  → Facebook tự đăng đúng giờ
 // Thư mục video do video/make.py tạo (có storyboard.json). Mỗi thuật ngữ chỉ đăng video một lần,
 // ghi ở logs/facebook-videos.json (tách khỏi logs/facebook-posted.json của bài thuật ngữ hằng ngày).
 import fs from "node:fs";
@@ -9,8 +10,10 @@ import { execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 
 const repo = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const dir = process.argv.slice(2).find((arg) => !arg.startsWith("--"));
+const dir = process.argv.slice(2).find((arg, i, all) => !arg.startsWith("--") && all[i - 1] !== "--schedule");
 const dryRun = process.argv.includes("--dry-run");
+const scheduleIndex = process.argv.indexOf("--schedule");
+const schedule = scheduleIndex >= 0 ? process.argv[scheduleIndex + 1] : undefined;
 if (!dir) {
   console.error("Cách dùng: node scripts/facebook-video.mjs <thư mục video> [--dry-run]");
   process.exit(1);
@@ -49,9 +52,11 @@ const messageFile = path.join(repo, "logs", `fb-video-${board.slug}.txt`);
 fs.mkdirSync(path.dirname(messageFile), { recursive: true });
 fs.writeFileSync(messageFile, message);
 const out = execFileSync("node", ["server/scripts/post.mjs", "--project", "topkhoahoc", "--message-file", messageFile,
-  "--video", video, "--title", `Video: ${board.term}`], { cwd: toolDir, encoding: "utf8" });
+  "--video", video, "--title", `Video: ${board.term}`, ...(schedule ? ["--schedule", schedule] : [])], { cwd: toolDir, encoding: "utf8" });
 const result = JSON.parse(out.trim().split("\n").filter((line) => line.startsWith("{")).at(-1));
-posted[board.slug] = { facebookPostId: result.facebookPostId, postedAt: new Date().toISOString() };
+posted[board.slug] = { facebookPostId: result.facebookPostId, postedAt: new Date().toISOString(), ...(result.scheduledFor ? { scheduledFor: result.scheduledFor } : {}) };
 fs.writeFileSync(stateFile, JSON.stringify(posted, null, 2));
 fs.rmSync(messageFile, { force: true });
-console.log(`${board.slug}: đã đăng Reel https://www.facebook.com/reel/${result.facebookPostId}`);
+console.log(result.scheduledFor
+  ? `${board.slug}: đã lên lịch Reel ${result.facebookPostId}, Facebook tự đăng lúc ${schedule}`
+  : `${board.slug}: đã đăng Reel https://www.facebook.com/reel/${result.facebookPostId}`);
