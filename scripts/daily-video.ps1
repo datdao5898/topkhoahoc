@@ -1,10 +1,13 @@
 ﻿# Làm video dọc cho thuật ngữ của ngày rồi đăng Reel lên Facebook Page TopKhoaHoc.
-# daily-term.ps1 gọi script này sau khi đăng bài; lỗi ở đây không ảnh hưởng bài trên web hay bài Facebook.
-#   powershell -ExecutionPolicy Bypass -File scripts\daily-video.ps1                    → thuật ngữ hôm nay
+# daily-term.ps1 (8:30) gọi script này với -NoPost để dựng sẵn video; Task Scheduler
+# "TopKhoaHoc - Dang Reel 20h" chạy lại lúc 20:00 để đăng. Lỗi ở đây không ảnh hưởng bài trên web hay bài Facebook.
+#   powershell -ExecutionPolicy Bypass -File scripts\daily-video.ps1                    → thuật ngữ hôm nay, dựng (nếu chưa có) rồi đăng
+#   powershell -ExecutionPolicy Bypass -File scripts\daily-video.ps1 -NoPost            → chỉ dựng video, không đăng
 #   powershell -ExecutionPolicy Bypass -File scripts\daily-video.ps1 -Date 2026-10-20 -DryRun   → làm video, không đăng
 # Các bước: Claude viết storyboard (scripts/daily-video-prompt.md) → video/make.py (giọng VieNeu + dựng cảnh)
 #           → HyperFrames check + render → scripts/facebook-video.mjs (đăng Reel, ghi logs/facebook-videos.json).
-param([string]$Date, [switch]$DryRun)
+# Khi đăng, nếu video.mp4 đã dựng sẵn thì dùng luôn; muốn dựng lại thì xoá video.mp4 đó.
+param([string]$Date, [switch]$DryRun, [switch]$NoPost)
 
 $Repo = Split-Path -Parent $PSScriptRoot
 Set-Location $Repo
@@ -53,6 +56,14 @@ if (-not (Test-Path $VenvPython)) { Fail "Không thấy Python của VieNeu-TTS:
 $board = "logs/video/$today-$slug.json"
 $out = Join-Path $VideoRoot "$today-$slug"
 
+if (-not $NoPost -and -not $DryRun -and (Test-Path (Join-Path $out "video.mp4"))) {
+  Log "Dùng video đã dựng sẵn: $out\video.mp4"
+  if ((Run "node scripts/facebook-video.mjs `"$out`"") -ne 0) {
+    Fail "Chưa đăng được video. Chạy lại: node scripts/facebook-video.mjs `"$out`""
+  }
+  exit 0
+}
+
 # Claude viết storyboard; sai định dạng thì cho viết lại một lần kèm thông báo lỗi.
 $note = ""
 for ($try = 1; $try -le 2; $try++) {
@@ -79,6 +90,8 @@ try {
   if ((Run "npx --yes $Hf render --output video.mp4") -ne 0 -or -not (Test-Path video.mp4)) { Fail "Render lỗi ở $out" }
 } finally { Pop-Location }
 Log "Video: $out\video.mp4"
+
+if ($NoPost) { Log "Đã dựng xong, 20:00 sẽ đăng Reel."; exit 0 }
 
 if ($DryRun) {
   Run "node scripts/facebook-video.mjs `"$out`" --dry-run" | Out-Null

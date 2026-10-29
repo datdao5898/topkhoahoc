@@ -9,7 +9,8 @@ Từ điển thuật ngữ trending (Next.js, nội dung Markdown trong `content
 1. Viết thuật ngữ, theo hướng dẫn trong `scripts/daily-term-prompt.md`.
 2. Build, commit rồi push. Vercel tự deploy lên https://topkhoahoc.online.
 3. Đăng lên Facebook Page **"Mỗi ngày một thuật ngữ trending"** (id 1477354225450684) bằng `scripts/facebook-post.mjs`.
-4. Làm video dọc cho thuật ngữ rồi đăng Reel, bằng `scripts/daily-video.ps1` (xem `video/README.md`). Lỗi ở bước này không ảnh hưởng 3 bước trên.
+4. Dựng sẵn video dọc cho thuật ngữ bằng `scripts/daily-video.ps1 -NoPost` (xem `video/README.md`). Lỗi ở bước này không ảnh hưởng 3 bước trên.
+5. 20:00 tối, task **"TopKhoaHoc - Dang Reel 20h"** chạy `scripts/daily-video.ps1` để đăng Reel. Đã có `video.mp4` dựng sẵn thì đăng luôn, chưa có thì dựng rồi đăng.
 
 ## Video thuật ngữ
 
