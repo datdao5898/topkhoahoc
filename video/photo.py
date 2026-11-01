@@ -214,6 +214,8 @@ def fetch_photos(sb, out):
         taken.add(title)
         known[pid] = {"id": pid, "query": q, "title": title, "license": lic, "source": ii.get("descriptionurl") or ii["url"]}
         print(f"  ảnh {pid}: {title} ({lic})", flush=True)
+        # ghi ngay từng ảnh: lỡ ảnh sau lỗi thì lần chạy lại vẫn biết ảnh này do máy tải (không phải người dùng tự bỏ vào)
+        cred_file.write_text(json.dumps(list(known.values()), ensure_ascii=False, indent=1), encoding="utf-8")
     cred_file.write_text(json.dumps(list(known.values()), ensure_ascii=False, indent=1), encoding="utf-8")
 
 
@@ -376,7 +378,7 @@ def build_scene(k, sc, start, dur, term, total_scenes):
     #root .shot {{ position: absolute; inset: 0; overflow: hidden; opacity: 0; }}
     #root .shot img {{ position: absolute; left: -135px; top: -240px; width: 1350px; height: 2400px; object-fit: cover; }}
     #root .scrim {{ position: absolute; inset: 0;
-      background: linear-gradient(180deg, rgba(10,8,6,.78) 0%, rgba(10,8,6,.45) 34%, rgba(10,8,6,.05) 52%, rgba(10,8,6,.15) 66%, rgba(10,8,6,.7) 100%); }}
+      background: linear-gradient(180deg, rgba(10,8,6,.8) 0%, rgba(10,8,6,.6) 34%, rgba(10,8,6,.42) 55%, rgba(10,8,6,.3) 68%, rgba(10,8,6,.7) 100%); }}
     #root .full {{ position: absolute; inset: 0; width: {W}px; height: {H}px; overflow: visible; }}
 {chr(10).join("    " + x for x in css)}
   </style>
