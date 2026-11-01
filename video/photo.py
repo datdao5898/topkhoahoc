@@ -135,29 +135,48 @@ def api(**params):
             time.sleep(3 * (attempt + 1))
 
 
-def variants(q):
-    """Từ khoá đầy đủ, rồi bớt dần từng chữ (giữ thứ tự), cuối cùng từng chữ dài nhất."""
-    words = q.split()
-    out = [q]
-    if len(words) > 2:
-        out += [" ".join(words[:i] + words[i + 1:]) for i in range(len(words) - 1, -1, -1)]
-    if len(words) > 1:
-        out += sorted(words, key=len, reverse=True)[:2]
-    return list(dict.fromkeys(out))
+STOP = {"a", "an", "the", "of", "in", "on", "at", "with", "and", "to", "for", "by"}
+# tên file có các chữ này thường là tranh, bản khắc, sơ đồ, hiện vật bảo tàng… không hợp video
+NOT_PHOTO = ("painting", "drawing", "illustration", "engraving", "etching", "lithograph", "poster", "diagram", "map ",
+             "logo", "bioart", "met dp", "museum", "cartoon", "sketch", "plate ", "woodcut", "manuscript", "stamp")
+# danh mục Commons của tranh, bản in, hiện vật bảo tàng (tên file nhiều khi không lộ ra, vd. "Rembrandt - Woman Lying in Bed")
+NOT_PHOTO_CATS = ("painting", "print", "drawing", "engraving", "etching", "museum", "rijksmuseum", "collection",
+                  "artworks", "sculpture", "illustration", "art by", "by rembrandt", "pd-art")
+
+
+def keywords(q):
+    return [w for w in q.lower().replace(",", " ").split() if w not in STOP and len(w) > 1]
+
+
+def title_fits(title, q):
+    """Tên file phải chứa mọi từ khoá (so 4 chữ cái đầu, nên 'pills' khớp 'pill', 'doctors' khớp 'doctor').
+    Bộ máy tìm kiếm của Commons khớp cả mô tả/danh mục nên hay trả ảnh lạc đề (tìm 'doctor' ra giày Dr. Martens)."""
+    t = title.lower()
+    return all(w[:4] in t for w in keywords(q))
 
 
 def search(queries, taken):
-    """Ảnh Unsplash (CC0) đầu tiên trên Commons khớp từ khoá. Chỉ dùng kho Unsplash: ảnh đời thường, chất lượng
-    đều; tìm rộng ra cả Commons thì hay dính ảnh tư liệu, tranh cổ không hợp. Hết từ khoá mới bỏ cuộc."""
-    tries = [s for q in queries for s in variants(q)]
-    for s in list(dict.fromkeys(tries)):
-        d = api(generator="search", gsrnamespace=6, gsrlimit=20, gsrsearch=f"{s} incategory:Images_from_Unsplash filetype:bitmap",
-                prop="imageinfo", iiprop="url|size|extmetadata", iiextmetadatafilter="LicenseShortName")
+    """Ảnh Unsplash (CC0) đầu tiên trên Commons có tên khớp từ khoá. Chỉ dùng kho Unsplash: ảnh đời thường, chất lượng
+    đều; tìm rộng ra cả Commons thì hay dính ảnh tư liệu, tranh cổ không hợp. Thử lần lượt các từ khoá storyboard ghi
+    (chính rồi dự phòng). Không tự bớt chữ: bớt hay làm rơi đúng danh từ chính ('woman holding pill' → ảnh ôm mèo).
+    Kho Unsplash thiếu hẳn vài chủ đề (thuốc, bác sĩ, phòng lab), nên không có thì tìm cả Commons (vẫn chỉ CC0 /
+    public domain, tên phải khớp, bỏ tranh vẽ, sơ đồ, ảnh .png).
+    Hết từ khoá thì bỏ cuộc, daily-video.ps1 cho Claude viết lại storyboard."""
+    # từng từ khoá: kho Unsplash trước, rồi cả Commons; xong mới sang từ khoá dự phòng (thường chung chung hơn)
+    scopes = [(s, wide) for s in dict.fromkeys(queries) for wide in (False, True)]
+    for s, wide in scopes:
+        query = f"{s} filetype:bitmap" if wide else f"{s} incategory:Images_from_Unsplash filetype:bitmap"
+        d = api(generator="search", gsrnamespace=6, gsrlimit=40 if wide else 20, gsrsearch=query,
+                prop="imageinfo", iiprop="url|size|extmetadata|mime", iiextmetadatafilter="LicenseShortName|Categories")
         pages = sorted(d.get("query", {}).get("pages", {}).values(), key=lambda p: p.get("index", 99))
         for p in pages:
             ii = (p.get("imageinfo") or [{}])[0]
             lic = ii.get("extmetadata", {}).get("LicenseShortName", {}).get("value", "")
-            if p["title"] in taken or min(ii.get("width", 0), ii.get("height", 0)) < 1100:
+            if p["title"] in taken or min(ii.get("width", 0), ii.get("height", 0)) < 1100 or not title_fits(p["title"], s):
+                continue
+            cats = ii.get("extmetadata", {}).get("Categories", {}).get("value", "").lower()
+            if wide and (ii.get("mime") != "image/jpeg" or any(w in p["title"].lower() for w in NOT_PHOTO)
+                         or any(w in cats for w in NOT_PHOTO_CATS)):
                 continue
             if lic.upper() == "CC0" or lic.lower().startswith("public domain"):
                 return p["title"], ii, lic
