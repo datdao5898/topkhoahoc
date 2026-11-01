@@ -13,10 +13,11 @@ Từ điển thuật ngữ trending (Next.js, nội dung Markdown trong `content
 
 ## Video thuật ngữ
 
-- Giọng: VieNeu-TTS, preset **"Quang Sơn"**, chạy trên máy, miễn phí. Văn phong trẻ trung, tếu.
-- Storyboard JSON (`logs/video/`) → `video/make.py` → render HyperFrames → `scripts/facebook-video.mjs`.
+- Kiểu dựng (từ 2026-11-01, theo bản demo déjà vu): **ảnh thật** CC0 (kho Unsplash trên Wikimedia Commons, máy tự tìm theo từ khoá), zoom chậm, hoà tan, thẻ chữ + icon vẽ nét.
+- Giọng: VieNeu-TTS, preset **"Hải Đăng"**, chạy trên máy, miễn phí. Văn phong trẻ trung, tếu.
+- Storyboard JSON (`logs/video/`) → `video/photo.py` (tải ảnh + giọng + cảnh) → render HyperFrames → `scripts/facebook-video.mjs`.
 - Mỗi thuật ngữ chỉ đăng video một lần, ghi ở `logs/facebook-videos.json`, tách khỏi `logs/facebook-posted.json` của bài viết.
-- Sửa cách dựng cảnh: `video/make.py`. Sửa cách viết kịch bản: `scripts/daily-video-prompt.md`.
+- Sửa cách dựng cảnh: `video/photo.py` (kiểu cũ có điện thoại/chat/timeline vẫn ở `video/make.py`). Sửa cách viết kịch bản: `scripts/daily-video-prompt.md`.
 
 ## Đăng Facebook
 

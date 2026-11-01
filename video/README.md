@@ -1,11 +1,15 @@
 # Video thuật ngữ (Reels / Shorts / TikTok)
 
-Video dọc 1080×1920, 55–85 giây, giọng nam VieNeu-TTS "Quang Sơn", dựng bằng HyperFrames.
+Video dọc 1080×1920, 55–85 giây, dựng bằng HyperFrames.
+
+**Mặc định từ 2026-11-01: kiểu ảnh (`video/photo.py`)**, theo bản demo déjà vu: ảnh thật CC0 toàn khung (Ken Burns, hoà tan), thẻ chữ + icon vẽ nét, phụ đề pop, giọng VieNeu **"Hải Đăng"**. Ảnh lấy tự động từ kho Unsplash trên Wikimedia Commons theo từ khoá trong storyboard (`photos`); nguồn từng ảnh ghi ở `<thư mục>/assets/photos/CREDITS.json`. Muốn tự chọn ảnh: bỏ `p3.jpg`… vào `assets/photos` trước khi chạy (đã có thì không tải lại), hoặc đổi từ khoá rồi chạy lại.
+
+Kiểu cũ (`video/make.py`, giọng "Quang Sơn": điện thoại, chat, timeline…) vẫn dùng được bằng tay; các mục dưới đây về `motion`, `morph`, `cover` là của kiểu cũ.
 
 ## Luồng
 
 1. **Storyboard**: file JSON mô tả từng cảnh và từng câu đọc (`logs/video/<ngày>-<slug>.json`). Mỗi sáng Claude viết theo `scripts/daily-video-prompt.md`; định dạng và các loại cảnh cũng ghi trong đó.
-2. **Dựng**: `video/make.py` đọc từng câu bằng VieNeu, tính thời gian, rồi sinh project HyperFrames (cảnh, phụ đề, âm thanh) vào `C:\Users\datda\Videos\topkhoahoc\<ngày>-<slug>`.
+2. **Dựng**: `video/photo.py` tải ảnh, đọc từng câu bằng VieNeu, tính thời gian, rồi sinh project HyperFrames (cảnh, phụ đề, âm thanh) vào `C:\Users\datda\Videos\topkhoahoc\<ngày>-<slug>`.
 3. **Render**: `npx hyperframes@0.8.201 render --output video.mp4` trong thư mục đó (4–10 phút).
 4. **Đăng**: `node scripts/facebook-video.mjs <thư mục>` đăng Reel qua tool chung, ghi `logs/facebook-videos.json`.
 
@@ -37,6 +41,8 @@ Cảnh `morph` (dùng được ở mọi kiểu) minh hoạ đổi chữ/đọc 
 
 ```powershell
 $py = "C:\Users\datda\Videos\topkhoahoc\voice-samples\vieneu-env\Scripts\python.exe"
+& $py -X utf8 video/photo.py logs/video/2026-11-01-red-flag.json C:\Users\datda\Videos\topkhoahoc\2026-11-01-red-flag
+# kiểu cũ:
 & $py -X utf8 video/make.py logs/video/2026-10-24-gaslighting.json C:\Users\datda\Videos\topkhoahoc\2026-10-24-gaslighting
 # sửa chữ/cảnh mà giữ giọng đã tạo:
 & $py -X utf8 video/make.py <storyboard> <thư mục> --no-voice

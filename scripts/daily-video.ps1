@@ -6,7 +6,7 @@
 #   powershell -ExecutionPolicy Bypass -File scripts\daily-video.ps1 -Slug aura         → thuật ngữ bất kỳ, lên lịch tối nay
 #   powershell -ExecutionPolicy Bypass -File scripts\daily-video.ps1 -NoPost            → chỉ dựng video, không đăng
 #   powershell -ExecutionPolicy Bypass -File scripts\daily-video.ps1 -Date 2026-10-20 -DryRun   → làm video, không đăng
-# Các bước: Claude viết storyboard (scripts/daily-video-prompt.md) → video/make.py (giọng VieNeu + dựng cảnh)
+# Các bước: Claude viết storyboard (scripts/daily-video-prompt.md) → video/photo.py (ảnh CC0 Wikimedia + giọng VieNeu "Hải Đăng" + dựng cảnh)
 #           → HyperFrames check + render → scripts/facebook-video.mjs (đăng Reel, ghi logs/facebook-videos.json).
 # Nếu video.mp4 đã dựng sẵn thì dùng luôn; muốn dựng lại thì xoá video.mp4 đó.
 param([string]$Date, [string]$Slug, [string]$At = "20:00", [switch]$DryRun, [switch]$NoPost)
@@ -78,11 +78,11 @@ if (-not $DryRun -and (Test-Path (Join-Path $out "video.mp4"))) {
         --permission-mode acceptEdits --allowedTools Read Write Glob Grep 2>&1 | ForEach-Object { Log "  [claude] $_" }
     }
     if (-not (Test-Path $board)) { continue }
-    Log "Dựng video (giọng đọc + cảnh)..."
-    $lines = & $VenvPython -X utf8 video/make.py $board $out 2>&1 | ForEach-Object { "$_" } | Where-Object { $_ -notmatch "warn" }
+    Log "Dựng video (ảnh + giọng đọc + cảnh)..."
+    $lines = & $VenvPython -X utf8 video/photo.py $board $out 2>&1 | ForEach-Object { "$_" } | Where-Object { $_ -notmatch "warn" }
     $lines | ForEach-Object { Log "  $_" }
     if ($LASTEXITCODE -eq 0) { break }
-    if ($LASTEXITCODE -ne 2) { Fail "video/make.py lỗi" }
+    if ($LASTEXITCODE -ne 2) { Fail "video/photo.py lỗi" }
     $note = " Lan truoc file bi loi: " + (($lines | Where-Object { $_ -match "LỖI" }) -join " ") + ". Sua lai cho dung."
     Remove-Item $board -ErrorAction SilentlyContinue
   }
