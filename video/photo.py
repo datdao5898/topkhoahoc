@@ -245,7 +245,8 @@ def pixabay_candidates(queries, taken, n):
     if not key:
         return out
     for q in dict.fromkeys(queries):
-        url = "https://pixabay.com/api/?" + urllib.parse.urlencode({"key": key, "q": q[:100], "image_type": "photo",
+        kw = keywords(q)
+        url = "https://pixabay.com/api/?" + urllib.parse.urlencode({"key": key, "q": " ".join(kw)[:100], "image_type": "photo",
                                                                      "orientation": "vertical", "safesearch": "true", "per_page": 20})
         try:
             with urllib.request.urlopen(urllib.request.Request(url, headers={"User-Agent": UA}), timeout=40) as f:
@@ -253,6 +254,11 @@ def pixabay_candidates(queries, taken, n):
         except Exception as e:  # key sai / hết lượt: bỏ qua Pixabay
             print(f"  (Pixabay lỗi: {e})", flush=True)
             return out
+        # Pixabay khớp lỏng ("pills in hand" ra cặp đôi nắm tay): xếp ảnh có tag khớp nhiều từ khoá lên trước,
+        # bỏ ảnh không khớp chữ nào; Claude (--pick) sẽ chọn lại lần nữa
+        score = lambda h: sum(w[:4] in h.get("tags", "").lower() for w in kw)  # noqa: E731
+        hits = sorted((h for h in hits if score(h) and "ai generated" not in h.get("tags", "").lower()),  # chỉ ảnh thật
+                      key=lambda h: -score(h))
         for h in hits:
             title = f"Pixabay {h['id']}: {h.get('tags', q)}"
             if title in taken or any(c["title"] == title for c in out) or h.get("imageHeight", 0) < 1600:
@@ -595,7 +601,7 @@ def main():
     out.mkdir(parents=True, exist_ok=True)
     M.scaffold(out, out.name)
     (out / "storyboard.json").write_text(pathlib.Path(sys.argv[1]).read_text(encoding="utf-8"), encoding="utf-8")
-    print("Tải ảnh (Wikimedia Commons, CC0)…", flush=True)
+    print("Tải ảnh (Pixabay / Pexels nếu có key, Wikimedia Commons)…", flush=True)
     fetch_photos(sb, out, pick="--pick" in sys.argv)
     timing = out / ".vo" / "timing.json"
     beats = [(si, b) for si, sc in enumerate(sb["scenes"]) for b in sc["beats"]]
