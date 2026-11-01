@@ -274,7 +274,7 @@ def build_scene(k, sc, start, dur, term, total_scenes):
                  f'<div id="{p}-url">' + "".join(f'<span{" class=dot" if c == "." else ""}>{c}</span>' for c in url) + "</div>"]
         css += [f"#{p}-rc {{ fill: none; stroke: {AMBER}; stroke-width: 4; stroke-dasharray: 1; }}",
                 f".{p}-dot {{ fill: {CREAM}; }}",
-                f"#{p}-term {{ position: absolute; left: 230px; right: 230px; top: {cy}px; transform: translateY(-50%); text-align: center; font-family: BVP; font-weight: 900; font-size: {fs}px; line-height: 1.02; letter-spacing: -0.02em; color: {CREAM}; text-shadow: 0 6px 40px rgba(0,0,0,.5); }}",
+                f"#{p}-term {{ position: absolute; left: 230px; right: 230px; top: {cy}px; transform: translateY(-50%); text-align: center; font-family: BVP; font-weight: 900; font-size: {fs}px; line-height: 1.02; letter-spacing: -0.02em; text-wrap: balance; color: {CREAM}; text-shadow: 0 6px 40px rgba(0,0,0,.5); }}",
                 f"#{p}-k {{ position: absolute; left: 0; right: 0; top: 965px; text-align: center; font-family: BVP; font-weight: 800; font-size: 40px; letter-spacing: .14em; color: {AMBER}; }}",
                 f"#{p}-url {{ position: absolute; left: 0; right: 0; top: 1020px; display: flex; justify-content: center; font-family: BVP; font-weight: 900; font-size: 84px; color: {CREAM}; }}",
                 f"#{p}-url span {{ display: inline-block; }} #{p}-url .dot {{ color: {AMBER}; }}"]
