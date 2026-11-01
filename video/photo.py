@@ -298,6 +298,8 @@ def build_scene(k, sc, start, dur, term, total_scenes):
             text = c["title"]
             longest = max(len(x) for x in text.split("\n"))
             size = 150 if longest <= 9 else 124 if longest <= 11 else 104
+            if text.count("\n") >= 2:
+                size = min(size, 108)  # 3 dòng: thu nhỏ để dòng phụ/keep không đè lên phụ đề (top 1150)
             th, nrows = title_html(f"{cid}-t", text, size)
             y_sub = 330 + 150 + 70 + int(nrows * size * 1.08) + 26
             echo = f'<div id="{cid}-echo" class="echo" data-layout-ignore style="font-size:{size}px">{esc(text)}</div>' if c.get("echo") else ""
