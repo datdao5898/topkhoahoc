@@ -3,6 +3,9 @@
 # giọng VieNeu "Hải Đăng", phụ đề kiểu pop. Định dạng storyboard: scripts/daily-video-prompt.md.
 # Chạy bằng Python của venv VieNeu:
 #   <venv>/Scripts/python -X utf8 video/photo.py logs/video/2026-11-01-red-flag.json C:/Users/datda/Videos/topkhoahoc/2026-11-01-red-flag [--no-voice]
+# --pick: mỗi ảnh lấy tối đa 5 ứng viên, Claude xem (đã cắt khung dọc) rồi chọn ảnh hợp câu đọc nhất;
+#   không ảnh nào hợp thì báo lỗi (exit 2) để viết lại từ khoá. daily-video.ps1 luôn dùng --pick.
+# Nguồn ảnh: Pexels nếu có key (PEXELS_API_KEY hoặc C:\Users\datda\Videos\topkhoahoc\pexels-key.txt), thiếu thì bù bằng Commons.
 # Muốn tự chọn ảnh: bỏ file <out>/assets/photos/<id>.jpg vào trước (đã có thì không tải lại).
 import json, math, pathlib, subprocess, sys, time, urllib.parse, urllib.request
 
@@ -120,7 +123,7 @@ def load(path):
     return sb
 
 
-# ---------- ảnh từ Wikimedia Commons ----------
+# ---------- ảnh: Pexels (nếu có key) + Wikimedia Commons ----------
 
 def api(**params):
     params.update(action="query", format="json")
@@ -155,41 +158,162 @@ def title_fits(title, q):
     return all(w[:4] in t for w in keywords(q))
 
 
-def search(queries, taken):
-    """Ảnh Unsplash (CC0) đầu tiên trên Commons có tên khớp từ khoá. Chỉ dùng kho Unsplash: ảnh đời thường, chất lượng
+def commons_candidates(queries, taken, n):
+    """Ảnh Unsplash (CC0) trên Commons có tên khớp từ khoá. Chỉ dùng kho Unsplash: ảnh đời thường, chất lượng
     đều; tìm rộng ra cả Commons thì hay dính ảnh tư liệu, tranh cổ không hợp. Thử lần lượt các từ khoá storyboard ghi
     (chính rồi dự phòng). Không tự bớt chữ: bớt hay làm rơi đúng danh từ chính ('woman holding pill' → ảnh ôm mèo).
     Kho Unsplash thiếu hẳn vài chủ đề (thuốc, bác sĩ, phòng lab), nên không có thì tìm cả Commons (vẫn chỉ CC0 /
-    public domain, tên phải khớp, bỏ tranh vẽ, sơ đồ, ảnh .png).
-    Hết từ khoá thì bỏ cuộc, daily-video.ps1 cho Claude viết lại storyboard."""
+    public domain, tên phải khớp, bỏ tranh vẽ, sơ đồ, ảnh .png)."""
+    out = []
     # từng từ khoá: kho Unsplash trước, rồi cả Commons; xong mới sang từ khoá dự phòng (thường chung chung hơn)
-    scopes = [(s, wide) for s in dict.fromkeys(queries) for wide in (False, True)]
-    for s, wide in scopes:
+    for s, wide in [(s, wide) for s in dict.fromkeys(queries) for wide in (False, True)]:
         query = f"{s} filetype:bitmap" if wide else f"{s} incategory:Images_from_Unsplash filetype:bitmap"
-        d = api(generator="search", gsrnamespace=6, gsrlimit=40 if wide else 20, gsrsearch=query,
+        d = api(generator="search", gsrnamespace=6, gsrlimit=40 if wide else 20, gsrsearch=query, iiurlwidth=480,
                 prop="imageinfo", iiprop="url|size|extmetadata|mime", iiextmetadatafilter="LicenseShortName|Categories")
         pages = sorted(d.get("query", {}).get("pages", {}).values(), key=lambda p: p.get("index", 99))
         for p in pages:
             ii = (p.get("imageinfo") or [{}])[0]
             lic = ii.get("extmetadata", {}).get("LicenseShortName", {}).get("value", "")
-            if p["title"] in taken or min(ii.get("width", 0), ii.get("height", 0)) < 1100 or not title_fits(p["title"], s):
+            if p["title"] in taken or any(c["title"] == p["title"] for c in out):
+                continue
+            if min(ii.get("width", 0), ii.get("height", 0)) < 1100 or not title_fits(p["title"], s):
                 continue
             cats = ii.get("extmetadata", {}).get("Categories", {}).get("value", "").lower()
             if wide and (ii.get("mime") != "image/jpeg" or any(w in p["title"].lower() for w in NOT_PHOTO)
                          or any(w in cats for w in NOT_PHOTO_CATS)):
                 continue
             if lic.upper() == "CC0" or lic.lower().startswith("public domain"):
-                return p["title"], ii, lic
-    return None
+                out.append({"title": p["title"], "license": lic, "source": ii.get("descriptionurl") or ii["url"],
+                            "thumb": ii.get("thumburl") or ii["url"], "commons": ii})
+                if len(out) >= n:
+                    return out
+    return out
 
 
-def fetch_photos(sb, out):
+def pexels_key():
+    """Key API Pexels (miễn phí): biến môi trường PEXELS_API_KEY, hoặc file pexels-key.txt trong thư mục video
+    (C:\\Users\\datda\\Videos\\topkhoahoc). Không để key trong repo."""
+    import os
+    if os.environ.get("PEXELS_API_KEY"):
+        return os.environ["PEXELS_API_KEY"].strip()
+    f = pathlib.Path(os.environ.get("TOPKHOAHOC_VIDEO_DIR", r"C:\Users\datda\Videos\topkhoahoc")) / "pexels-key.txt"
+    return f.read_text(encoding="utf-8").strip() if f.exists() else ""
+
+
+def pexels_candidates(queries, taken, n):
+    """Kho Pexels: ảnh stock đời thường rất nhiều, tìm theo nghĩa (không cần tên file khớp), có sẵn ảnh dọc.
+    Giấy phép Pexels cho dùng miễn phí, không bắt ghi nguồn (vẫn ghi vào CREDITS.json)."""
+    key = pexels_key()
+    out = []
+    if not key:
+        return out
+    for q in dict.fromkeys(queries):
+        url = "https://api.pexels.com/v1/search?" + urllib.parse.urlencode({"query": q, "orientation": "portrait", "per_page": 10})
+        try:
+            with urllib.request.urlopen(urllib.request.Request(url, headers={"Authorization": key, "User-Agent": UA}), timeout=40) as f:
+                photos = json.load(f).get("photos", [])
+        except Exception as e:  # key sai / hết lượt: bỏ qua Pexels, dùng Commons
+            print(f"  (Pexels lỗi: {e})", flush=True)
+            return out
+        for ph in photos:
+            title = f"Pexels {ph['id']}: {ph.get('alt') or q}"
+            if title in taken or any(c["title"] == title for c in out) or ph.get("height", 0) < 1600:
+                continue
+            out.append({"title": title, "license": f"Pexels License · {ph.get('photographer', '')}", "source": ph["url"],
+                        "thumb": ph["src"]["medium"], "full": ph["src"]["original"] + "?auto=compress&cs=tinysrgb&h=2600"})
+            if len(out) >= n:
+                return out
+    return out
+
+
+def candidates(queries, taken, n):
+    """Pexels trước (nếu có key), thiếu thì bù bằng Commons."""
+    got = pexels_candidates(queries, taken, n)
+    if len(got) < n:
+        got += commons_candidates(queries, taken | {c["title"] for c in got}, n - len(got))
+    return got
+
+
+def get(url, dst):
+    with urllib.request.urlopen(urllib.request.Request(url, headers={"User-Agent": UA}), timeout=120) as f:
+        dst.write_bytes(f.read())
+
+
+def cover(src, dst, w, h, q=3):
+    """Cắt đúng khung dọc (ảnh trong video là khung 1350x2400 rồi zoom chậm)."""
+    subprocess.run(["ffmpeg", "-y", "-v", "error", "-i", str(src), "-vf",
+                    f"scale={w}:{h}:force_original_aspect_ratio=increase,crop={w}:{h}", "-q:v", str(q), str(dst)], check=True)
+
+
+def download(c, dst):
+    if "commons" in c:
+        ii = c["commons"]
+        w = min(ii["width"], math.ceil(2400 * ii["width"] / ii["height"]) + 2, 4000)
+        d = api(titles=c["title"], prop="imageinfo", iiprop="url", iiurlwidth=w)
+        url = next(iter(d["query"]["pages"].values()))["imageinfo"][0].get("thumburl") or ii["url"]
+    else:
+        url = c["full"]
+    raw = dst.with_suffix(".src")
+    get(url, raw)
+    cover(raw, dst, 1350, 2400)
+    raw.unlink()
+
+
+def scene_text(sb, pid):
+    """Các câu đọc + chữ trên thẻ trong lúc ảnh pid hiện (từ beat có ảnh tới beat đổi ảnh kế tiếp)."""
+    lines, on = [], False
+    for sc in sb["scenes"]:
+        for b in sc["beats"]:
+            if b.get("photo"):
+                on = b["photo"] == pid
+            if on:
+                c = b.get("card") or {}
+                card = " / ".join(str(x).replace("\n", " ") for x in (c.get("kicker"), c.get("title"), c.get("sub")) if x)
+                lines.append(f"- đọc: \"{b.get('cap') or b['say']}\"" + (f" · thẻ chữ: {card}" if card else ""))
+    return "\n".join(lines)
+
+
+def claude_pick(sb, out, pending):
+    """Cho Claude xem ảnh ứng viên (đã cắt khung dọc như trong video) và chọn ảnh hợp nhất cho từng chỗ."""
+    import shutil
+    cand = out / ".cand"
+    exe = shutil.which("claude")
+    if not exe:
+        print("  (không thấy lệnh claude, lấy ảnh ứng viên đầu tiên)", flush=True)
+        return {pid: 1 for pid in pending}
+    parts = [f"# Chọn ảnh cho video \"{sb['term']}\"\n",
+             "Video dọc giải thích thuật ngữ, ảnh thật toàn khung, phía trên có thẻ chữ, giữa có phụ đề. "
+             "Mỗi file `.cand/<id>.jpg` là một dải ảnh ứng viên xếp ngang, đánh số 1, 2, 3… từ trái sang phải, "
+             "đã cắt khung dọc đúng như sẽ hiện trong video.\n",
+             "Đọc (Read) từng file ảnh dưới đây, chọn ảnh **hợp ý câu đọc nhất**. Ưu tiên: đúng chủ thể/hành động/cảm xúc của câu, "
+             "người và vật rõ ràng trong khung dọc (không bị cắt mất đầu/mặt), không có chữ to, logo, watermark, không phản cảm, "
+             "không phải tranh vẽ. Ảnh chỉ hợp mơ hồ hoặc lạc đề thì ghi 0.\n"]
+    for pid, n in pending.items():
+        parts.append(f"\n## {pid}: `.cand/{pid}.jpg` ({n} ảnh)\n{scene_text(sb, pid)}\n")
+    parts.append("\nGhi kết quả vào `.cand/picks.json` (UTF-8), dạng `{\"p1\": 2, \"p2\": 0, ...}` (số thứ tự ảnh, 0 = không ảnh nào hợp), "
+                 "kèm khoá `\"why\"` là object ghi lý do ngắn cho mỗi ảnh chọn 0. Rồi dừng.\n")
+    (cand / "PICK.md").write_text("".join(parts), encoding="utf-8")
+    picks = cand / "picks.json"
+    picks.unlink(missing_ok=True)
+    print("  Claude đang xem ảnh ứng viên…", flush=True)
+    subprocess.run([exe, "-p", "Doc file .cand/PICK.md va lam dung huong dan.", "--permission-mode", "acceptEdits",
+                    "--allowedTools", "Read", "Write"], cwd=str(out), timeout=900,
+                   stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    if not picks.exists():
+        print("  (Claude không ghi picks.json, lấy ảnh ứng viên đầu tiên)", flush=True)
+        return {pid: 1 for pid in pending}
+    return json.loads(picks.read_text(encoding="utf-8"))
+
+
+def fetch_photos(sb, out, pick=False):
     folder = out / "assets" / "photos"
     folder.mkdir(parents=True, exist_ok=True)
     cred_file = folder / "CREDITS.json"
     credits = json.loads(cred_file.read_text(encoding="utf-8")) if cred_file.exists() else []
     known = {c["id"]: c for c in credits}
     taken = {c["title"] for c in credits}
+    save = lambda: cred_file.write_text(json.dumps(list(known.values()), ensure_ascii=False, indent=1), encoding="utf-8")  # noqa: E731
+    todo = {}
     for pid, q in sb["photos"].items():
         dst = folder / f"{pid}.jpg"
         if dst.exists() and pid in known and known[pid].get("query") != q:
@@ -197,26 +321,51 @@ def fetch_photos(sb, out):
             taken.discard(known.pop(pid)["title"])
         if dst.exists():
             continue  # ảnh đã tải, hoặc người dùng tự bỏ ảnh vào
-        hit = search([q] if isinstance(q, str) else list(q), taken)
-        if not hit:
+        cs = candidates([q] if isinstance(q, str) else list(q), taken | {c["title"] for v in todo.values() for c in v},
+                        5 if pick else 1)
+        if not cs:
             fail(f"không tìm được ảnh cho {pid} ({q}), đổi từ khoá tiếng Anh đơn giản hơn")
-        title, ii, lic = hit
-        w = min(ii["width"], math.ceil(2400 * ii["width"] / ii["height"]) + 2, 4000)
-        url = api(titles=title, prop="imageinfo", iiprop="url", iiurlwidth=w)
-        url = next(iter(url["query"]["pages"].values()))["imageinfo"][0].get("thumburl") or ii["url"]
-        raw = folder / f"{pid}.src"
-        with urllib.request.urlopen(urllib.request.Request(url, headers={"User-Agent": UA}), timeout=120) as f:
-            raw.write_bytes(f.read())
-        # cắt sẵn đúng khung 1350x2400 (khung Ken Burns), nhẹ và đều nhau
-        subprocess.run(["ffmpeg", "-y", "-v", "error", "-i", str(raw), "-vf",
-                        "scale=1350:2400:force_original_aspect_ratio=increase,crop=1350:2400", "-q:v", "3", str(dst)], check=True)
-        raw.unlink()
-        taken.add(title)
-        known[pid] = {"id": pid, "query": q, "title": title, "license": lic, "source": ii.get("descriptionurl") or ii["url"]}
-        print(f"  ảnh {pid}: {title} ({lic})", flush=True)
-        # ghi ngay từng ảnh: lỡ ảnh sau lỗi thì lần chạy lại vẫn biết ảnh này do máy tải (không phải người dùng tự bỏ vào)
-        cred_file.write_text(json.dumps(list(known.values()), ensure_ascii=False, indent=1), encoding="utf-8")
-    cred_file.write_text(json.dumps(list(known.values()), ensure_ascii=False, indent=1), encoding="utf-8")
+        todo[pid] = cs
+    if not todo:
+        return
+    choice = {pid: 1 for pid in todo}
+    if pick:
+        cand = out / ".cand"
+        cand.mkdir(exist_ok=True)
+        for pid, cs in todo.items():
+            thumbs = []
+            for k, c in enumerate(cs, 1):
+                t, src = cand / f"{pid}-{k}.jpg", cand / f"{pid}-{k}.src"
+                try:
+                    get(c["thumb"], src)
+                    cover(src, t, 270, 480, 4)
+                    thumbs.append(t)
+                finally:
+                    src.unlink(missing_ok=True)
+            pad = "".join(f"[{i}]pad=282:480:6:0:white[t{i}];" for i in range(len(thumbs)))
+            subprocess.run(["ffmpeg", "-y", "-v", "error", *sum((["-i", str(t)] for t in thumbs), []), "-filter_complex",
+                            pad + "".join(f"[t{i}]" for i in range(len(thumbs))) + f"hstack=inputs={len(thumbs)}" if len(thumbs) > 1
+                            else "[0]copy", str(cand / f"{pid}.jpg")], check=True)
+        picks = claude_pick(sb, out, {pid: len(cs) for pid, cs in todo.items()})
+        bad = [pid for pid in todo if not isinstance(picks.get(pid), int) or not 0 <= picks[pid] <= len(todo[pid])]
+        zero = [pid for pid in todo if picks.get(pid) == 0]
+        if zero and "--lenient" in sys.argv:  # lần thử cuối của job hằng ngày: có ảnh còn hơn không có video
+            print("  (không ảnh nào thật hợp cho " + ", ".join(zero) + ", tạm lấy ảnh ứng viên đầu)", flush=True)
+            picks.update({pid: 1 for pid in zero})
+            zero = []
+        if zero:
+            why = picks.get("why") or {}
+            fail("ảnh không hợp cho " + ", ".join(f"{pid} ({sb['photos'][pid]}: {why.get(pid, 'lạc đề')})" for pid in zero)
+                 + ". Đổi từ khoá cụ thể hơn, đúng cảnh trong câu đọc")
+        choice.update({pid: picks[pid] for pid in todo if pid not in bad})
+    for pid, cs in todo.items():
+        c = cs[choice[pid] - 1]
+        download(c, folder / f"{pid}.jpg")
+        taken.add(c["title"])
+        known[pid] = {"id": pid, "query": sb["photos"][pid], "title": c["title"], "license": c["license"], "source": c["source"]}
+        print(f"  ảnh {pid}: {c['title']} ({c['license']})" + (f" [chọn {choice[pid]}/{len(cs)}]" if pick else ""), flush=True)
+        save()  # ghi ngay từng ảnh: lỡ ảnh sau lỗi thì lần chạy lại vẫn biết ảnh này do máy tải
+    save()
 
 
 # ---------- dựng cảnh ----------
@@ -407,7 +556,7 @@ def main():
     M.scaffold(out, out.name)
     (out / "storyboard.json").write_text(pathlib.Path(sys.argv[1]).read_text(encoding="utf-8"), encoding="utf-8")
     print("Tải ảnh (Wikimedia Commons, CC0)…", flush=True)
-    fetch_photos(sb, out)
+    fetch_photos(sb, out, pick="--pick" in sys.argv)
     timing = out / ".vo" / "timing.json"
     beats = [(si, b) for si, sc in enumerate(sb["scenes"]) for b in sc["beats"]]
     if "--no-voice" in sys.argv and timing.exists():

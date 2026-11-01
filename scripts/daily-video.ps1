@@ -79,7 +79,9 @@ if (-not $DryRun -and (Test-Path (Join-Path $out "video.mp4"))) {
     }
     if (-not (Test-Path $board)) { continue }
     Log "Dựng video (ảnh + giọng đọc + cảnh)..."
-    $lines = & $VenvPython -X utf8 video/photo.py $board $out 2>&1 | ForEach-Object { "$_" } | Where-Object { $_ -notmatch "warn" }
+    # --pick: Claude xem ảnh ứng viên rồi chọn; lần thử cuối thêm --lenient (không ảnh nào hợp thì vẫn lấy ảnh tốt nhất)
+    $pickArgs = if ($try -ge 2) { @("--pick", "--lenient") } else { @("--pick") }
+    $lines = & $VenvPython -X utf8 video/photo.py $board $out @pickArgs 2>&1 | ForEach-Object { "$_" } | Where-Object { $_ -notmatch "warn" }
     $lines | ForEach-Object { Log "  $_" }
     if ($LASTEXITCODE -eq 0) { break }
     if ($LASTEXITCODE -ne 2) { Fail "video/photo.py lỗi" }
