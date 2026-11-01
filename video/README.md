@@ -6,7 +6,7 @@ Video dọc 1080×1920, 55–85 giây, dựng bằng HyperFrames.
 
 **Chọn ảnh (`--pick`, job hằng ngày luôn bật)**: mỗi ảnh lấy tối đa 5 ứng viên, cắt khung dọc, ghép thành dải `<thư mục>/.cand/<id>.jpg`; Claude (`claude -p`, đọc `.cand/PICK.md`) xem và chọn ảnh hợp câu đọc nhất, ghi `.cand/picks.json`. Không ảnh nào hợp thì báo lỗi kèm lý do để viết lại từ khoá; lần thử cuối thêm `--lenient` để vẫn ra video.
 
-**Pexels (nên có)**: kho ảnh stock lớn, đúng chủ đề hơn Commons nhiều. Lấy key miễn phí ở https://www.pexels.com/api/ rồi ghi vào `C:\Users\datda\Videos\topkhoahoc\pexels-key.txt` (hoặc biến môi trường `PEXELS_API_KEY`). Không để key trong repo. Không có key thì chỉ dùng Commons.
+**Pixabay / Pexels (nên có)**: kho ảnh stock lớn, đúng chủ đề hơn Commons nhiều. Pixabay: đăng nhập rồi lấy key ở https://pixabay.com/api/docs/ (mục "Parameters", dòng `key`), ghi vào `C:\Users\datda\Videos\topkhoahoc\pixabay-key.txt` (hoặc biến môi trường `PIXABAY_API_KEY`). Pexels (11/2026 đang ngừng cấp key mới): `pexels-key.txt` / `PEXELS_API_KEY`. Không để key trong repo. Không có key thì chỉ dùng Commons.
 
 Kiểu cũ (`video/make.py`, giọng "Quang Sơn": điện thoại, chat, timeline…) vẫn dùng được bằng tay; các mục dưới đây về `motion`, `morph`, `cover` là của kiểu cũ.
 

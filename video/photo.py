@@ -5,7 +5,8 @@
 #   <venv>/Scripts/python -X utf8 video/photo.py logs/video/2026-11-01-red-flag.json C:/Users/datda/Videos/topkhoahoc/2026-11-01-red-flag [--no-voice]
 # --pick: mỗi ảnh lấy tối đa 5 ứng viên, Claude xem (đã cắt khung dọc) rồi chọn ảnh hợp câu đọc nhất;
 #   không ảnh nào hợp thì báo lỗi (exit 2) để viết lại từ khoá. daily-video.ps1 luôn dùng --pick.
-# Nguồn ảnh: Pexels nếu có key (PEXELS_API_KEY hoặc C:\Users\datda\Videos\topkhoahoc\pexels-key.txt), thiếu thì bù bằng Commons.
+# Nguồn ảnh: Pexels / Pixabay nếu có key (pexels-key.txt / pixabay-key.txt trong C:\Users\datda\Videos\topkhoahoc,
+#   hoặc PEXELS_API_KEY / PIXABAY_API_KEY), thiếu thì bù bằng Commons.
 # Muốn tự chọn ảnh: bỏ file <out>/assets/photos/<id>.jpg vào trước (đã có thì không tải lại).
 import json, math, pathlib, subprocess, sys, time, urllib.parse, urllib.request
 
@@ -226,9 +227,48 @@ def pexels_candidates(queries, taken, n):
     return out
 
 
+def pixabay_key():
+    """Key API Pixabay (miễn phí, hiện ngay ở https://pixabay.com/api/docs/ khi đã đăng nhập): biến môi trường
+    PIXABAY_API_KEY, hoặc file pixabay-key.txt trong thư mục video. Không để key trong repo."""
+    import os
+    if os.environ.get("PIXABAY_API_KEY"):
+        return os.environ["PIXABAY_API_KEY"].strip()
+    f = pathlib.Path(os.environ.get("TOPKHOAHOC_VIDEO_DIR", r"C:\Users\datda\Videos\topkhoahoc")) / "pixabay-key.txt"
+    return f.read_text(encoding="utf-8").strip() if f.exists() else ""
+
+
+def pixabay_candidates(queries, taken, n):
+    """Kho Pixabay: ảnh stock miễn phí (Pixabay Content License, không bắt ghi nguồn), lọc ảnh dọc, an toàn.
+    API cho ảnh tối đa 1280px (largeImageURL), đủ cho khung dọc 1080x1920 sau khi phóng nhẹ."""
+    key = pixabay_key()
+    out = []
+    if not key:
+        return out
+    for q in dict.fromkeys(queries):
+        url = "https://pixabay.com/api/?" + urllib.parse.urlencode({"key": key, "q": q[:100], "image_type": "photo",
+                                                                     "orientation": "vertical", "safesearch": "true", "per_page": 20})
+        try:
+            with urllib.request.urlopen(urllib.request.Request(url, headers={"User-Agent": UA}), timeout=40) as f:
+                hits = json.load(f).get("hits", [])
+        except Exception as e:  # key sai / hết lượt: bỏ qua Pixabay
+            print(f"  (Pixabay lỗi: {e})", flush=True)
+            return out
+        for h in hits:
+            title = f"Pixabay {h['id']}: {h.get('tags', q)}"
+            if title in taken or any(c["title"] == title for c in out) or h.get("imageHeight", 0) < 1600:
+                continue
+            out.append({"title": title, "license": f"Pixabay Content License · {h.get('user', '')}", "source": h["pageURL"],
+                        "thumb": h["webformatURL"], "full": h["largeImageURL"]})
+            if len(out) >= n:
+                return out
+    return out
+
+
 def candidates(queries, taken, n):
-    """Pexels trước (nếu có key), thiếu thì bù bằng Commons."""
+    """Pexels, Pixabay (nếu có key), thiếu thì bù bằng Commons."""
     got = pexels_candidates(queries, taken, n)
+    if len(got) < n:
+        got += pixabay_candidates(queries, taken | {c["title"] for c in got}, n - len(got))
     if len(got) < n:
         got += commons_candidates(queries, taken | {c["title"] for c in got}, n - len(got))
     return got
