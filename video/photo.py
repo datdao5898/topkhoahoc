@@ -538,7 +538,8 @@ def build_scene(k, sc, start, dur, term, total_scenes):
                 sfx.append(("impact-bass-2.mp3", start + t + 0.2, 0.35))
             else:
                 sfx.append(("pop.mp3", start + t + 0.2, 0.3))
-            live = (cid, y_sub + (70 if c.get("sub") else 0) + (40 if c.get("echo") else 0), [cid])
+            sub_rows = -(-len(c.get("sub", "")) // 32) if c.get("sub") else 0  # ~32 ký tự/dòng ở 50px
+            live = (cid, y_sub + (70 + 62 * max(0, sub_rows - 1) if sub_rows else 0) + (40 if c.get("echo") else 0), [cid])
         if live and k + 1 < total_scenes:
             for el in live[2]:
                 js.append(f'tl.to("#{el}", {{ opacity: 0, duration: 0.3, ease: "power2.in" }}, {r(dur - XF - 0.35)});')
