@@ -302,7 +302,7 @@ def build_scene(k, sc, start, dur, term, total_scenes):
                 size = min(size, 108)  # 3 dòng: thu nhỏ để dòng phụ/keep không đè lên phụ đề (top 1150)
             th, nrows = title_html(f"{cid}-t", text, size)
             y_sub = 330 + 150 + 70 + int(nrows * size * 1.08) + 26
-            echo = f'<div id="{cid}-echo" class="echo" data-layout-ignore style="font-size:{size}px">{esc(text)}</div>' if c.get("echo") else ""
+            echo = f'<div id="{cid}-echo" class="echo" data-layout-ignore style="font-size:{size}px">{"<br>".join(esc(x) for x in text.split(chr(10)))}</div>' if c.get("echo") else ""
             html.append(f'''<div id="{cid}" class="card">
   <div class="badge"><svg class="bring" viewBox="0 0 120 120"><circle id="{cid}-r" cx="60" cy="60" r="56" pathLength="1" transform="rotate(-90 60 60)"/></svg>{icon(f"{cid}-ip", c.get("icon", "spark"))}</div>
   <div class="kick" id="{cid}-k">{esc(c.get("kicker", "")).upper()}</div>
@@ -337,7 +337,7 @@ def build_scene(k, sc, start, dur, term, total_scenes):
             f"#{p} .kick {{ margin-top: 30px; font-family: BVP; font-weight: 800; font-size: 40px; letter-spacing: .12em; color: {AMBER}; text-shadow: 0 2px 14px rgba(0,0,0,.5); }}",
             f"#{p} .title {{ position: relative; margin-top: 8px; font-family: BVP; font-weight: 900; line-height: 1.04; letter-spacing: -0.02em; color: {CREAM}; text-shadow: 0 6px 34px rgba(0,0,0,.55); }}",
             f"#{p} .tl {{ overflow: hidden; padding-bottom: .06em; }} #{p} .tli {{ display: block; }}",
-            f"#{p} .echo {{ position: absolute; left: 0; top: 198px; font-family: BVP; font-weight: 900; line-height: 1.04; letter-spacing: -0.02em; color: transparent; -webkit-text-stroke: 3px {AMBER}; opacity: 0; }}",
+            f"#{p} .echo {{ position: absolute; left: 0; top: 198px; font-family: BVP; font-weight: 900; line-height: 1.1; letter-spacing: -0.02em; color: transparent; -webkit-text-stroke: 3px {AMBER}; opacity: 0; }}",
             f"#{p} .sub {{ margin-top: 22px; font-family: BVP; font-weight: 500; font-size: 50px; color: {CREAM}; text-shadow: 0 2px 18px rgba(0,0,0,.6); }}",
             f"#{p} .subline {{ position: absolute; left: 80px; width: 920px; font-family: BVP; font-weight: 800; font-size: 54px; line-height: 1.2; color: {AMBER}; text-shadow: 0 2px 18px rgba(0,0,0,.6); }}",
             f"#{p} .dlg {{ position: absolute; left: 110px; top: 380px; width: 860px; background: #fbf8f2; border-radius: 34px; padding: 44px 48px 40px; color: {INK}; box-shadow: 0 30px 80px rgba(0,0,0,.45); font-family: BVP; }}",
