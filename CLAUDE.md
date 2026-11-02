@@ -11,6 +11,8 @@ Từ điển thuật ngữ trending (Next.js, nội dung Markdown trong `content
 3. Đăng lên Facebook Page **"Mỗi ngày một thuật ngữ trending"** (id 1477354225450684) bằng `scripts/facebook-post.mjs`.
 4. Làm video dọc cho thuật ngữ rồi lên lịch Reel **20:00** hôm đó trên Facebook, bằng `scripts/daily-video.ps1` (xem `video/README.md`). Facebook tự đăng, máy không cần bật buổi tối. Lỗi ở bước này không ảnh hưởng 3 bước trên.
 
+Mỗi lần push bài mới vào `content/terms/`, GitHub Action `.github/workflows/indexnow.yml` tự chờ Vercel deploy rồi báo IndexNow (`scripts/indexnow.mjs`). Bước này nằm ngoài script trên, nên cả bài bonus và bài viết tay đều được báo.
+
 ## Video thuật ngữ
 
 - Kiểu dựng (từ 2026-11-01, theo bản demo déjà vu): **ảnh thật** CC0 (kho Unsplash trên Wikimedia Commons, máy tự tìm theo từ khoá), zoom chậm, hoà tan, thẻ chữ + icon vẽ nét.

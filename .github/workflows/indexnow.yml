@@ -1,8 +1,12 @@
-name: IndexNow hằng ngày
+name: IndexNow
 
 on:
+  # Có bài mới được push: báo ngay, không cần máy nào bật. Gồm cả bài bonus và bài viết tay.
+  push:
+    branches: [main]
+    paths: ["content/terms/*.md"]
   schedule:
-    # 18:30 UTC = 01:30 sáng giờ VN, sau khi thuật ngữ mới đã tự lên trang.
+    # 18:30 UTC = 01:30 sáng giờ VN: báo các bài hẹn ngày vừa tự lên trang (không có lượt push nào vào ngày đó).
     - cron: "30 18 * * *"
   workflow_dispatch:
     inputs:
@@ -11,12 +15,32 @@ on:
         type: boolean
         default: false
 
+permissions:
+  contents: read
+
 jobs:
   ping:
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - run: node scripts/indexnow.mjs ${{ inputs.all && '--all' || '' }}
+      - name: Gửi bài mới của lượt push
+        if: github.event_name == 'push'
+        env:
+          BEFORE: ${{ github.event.before }}
+        run: |
+          slugs=$(git diff --name-only --diff-filter=A "$BEFORE" "$GITHUB_SHA" -- 'content/terms/*.md' \
+            | xargs -r -n1 basename | sed 's/\.md$//' | { grep -v '^_' || true; })
+          if [ -z "$slugs" ]; then
+            echo "Lượt push này chỉ sửa bài cũ, không có bài mới."
+            exit 0
+          fi
+          node scripts/indexnow.mjs $slugs
+      - name: Gửi bài hẹn ngày hôm nay (hoặc toàn bộ)
+        if: github.event_name != 'push'
+        run: node scripts/indexnow.mjs ${{ inputs.all && '--all' || '' }}

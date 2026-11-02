@@ -52,7 +52,7 @@ Task Scheduler của Windows chạy task **"TopKhoaHoc - Thuat ngu hang ngay"** 
 **GEO (ChatGPT, Perplexity, Gemini, Google AI Overviews):**
 - Mỗi bài mở đầu bằng một câu định nghĩa trả lời thẳng, có nguồn tham khảo và ngày cập nhật: dạng nội dung AI hay trích dẫn
 - `/llms.txt` (mục lục cho AI) và `/llms-full.txt` (toàn bộ nội dung Markdown)
-- IndexNow: GitHub Action `.github/workflows/indexnow.yml` chạy 01:30 sáng mỗi ngày, báo bài mới cho Bing (ChatGPT Search dùng index của Bing). Chạy tay: `node scripts/indexnow.mjs --all`
+- IndexNow: GitHub Action `.github/workflows/indexnow.yml` báo bài mới cho Bing (ChatGPT Search dùng index của Bing) ngay khi bài được push và Vercel deploy xong, gồm cả bài bonus và bài viết tay. Bài hẹn ngày được báo lúc khoảng 01:30 sáng ngày đó. Chạy tay: `node scripts/indexnow.mjs <slug>` hoặc `--all`. Google không nhận IndexNow, vẫn tự thu thập qua sitemap.
 - `/feed.xml` (RSS): cho Telegram, Zalo… (Facebook đã tự đăng qua `scripts/facebook-post.mjs`)
 
 ## Chạy local
