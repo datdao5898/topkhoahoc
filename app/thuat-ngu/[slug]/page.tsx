@@ -4,8 +4,9 @@ import { notFound } from "next/navigation";
 import ShareButtons from "@/components/ShareButtons";
 import { FollowCard } from "@/components/FollowFacebook";
 import TermCard from "@/components/TermCard";
-import { formatDate } from "@/lib/format";
-import { getAdjacentTerms, getPublishedTerms, getRelatedTerms, getTermBySlug, type Term } from "@/lib/terms";
+import { categoryClass } from "@/lib/categories";
+import { formatDate, normalizeText } from "@/lib/format";
+import { getAdjacentTerms, getPublishedTerms, getRelatedTerms, getTermBySlug, getTermVideoId, type Term } from "@/lib/terms";
 import { SITE, absoluteUrl, organizationJsonLd } from "@/lib/site";
 
 // Thuật ngữ hẹn giờ chưa có trong build sẽ được render khi tới ngày (ISR).
@@ -20,6 +21,26 @@ export function generateStaticParams() {
 function pageTitle(term: Term) {
   return term.seoTitle ?? `${term.term} là gì? Ý nghĩa và nguồn gốc`;
 }
+
+// Chỉ hiện vài cách gọi thật sự khác tên chính; đủ aliases vẫn nằm trong metadata và JSON-LD.
+function displayAliases(term: Term, limit = 3) {
+  const name = normalizeText(term.term);
+  const seen = new Set<string>();
+  return term.aliases
+    .filter((alias) => {
+      const key = normalizeText(alias);
+      // Bỏ cụm nằm trong tên chính hoặc chứa nguyên tên chính ("fomo là gì"): đó là từ khoá, không phải cách gọi khác.
+      if (seen.has(key) || name.includes(key) || key.includes(name)) return false;
+      seen.add(key);
+      return true;
+    })
+    .slice(0, limit);
+}
+
+// Thân bài đã có mục riêng về nguồn gốc thì không hiện thêm khối "Nguồn gốc" cho khỏi lặp.
+const bodyCoversOrigin = (term: Term) => /^##\s.*(nguồn gốc|xuất phát|từ đâu|ra đời)/im.test(term.body);
+
+const PROSE = "prose prose-stone prose-lg max-w-none prose-headings:font-bold prose-h2:text-2xl prose-a:text-brand-700";
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const term = getTermBySlug((await params).slug);
@@ -51,6 +72,8 @@ export default async function TermPage({ params }: Props) {
   const url = absoluteUrl(`/thuat-ngu/${term.slug}`);
   const related = getRelatedTerms(term);
   const { newer, older } = getAdjacentTerms(term);
+  const aliases = displayAliases(term);
+  const videoId = getTermVideoId(term.slug);
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -131,7 +154,7 @@ export default async function TermPage({ params }: Props) {
 
       <header>
         <div className="flex flex-wrap items-center gap-3 text-sm">
-          <span className="rounded-full bg-brand-100 text-brand-700 px-3 py-1 font-semibold">{term.category}</span>
+          <span className={`rounded-full px-3 py-1 font-semibold ${categoryClass(term.category)}`}>{term.category}</span>
           <time dateTime={term.date} className="text-stone-500">
             {formatDate(term.date)}
           </time>
@@ -142,10 +165,10 @@ export default async function TermPage({ params }: Props) {
           )}
         </div>
         <h1 className="mt-4 text-4xl md:text-5xl font-extrabold">{term.term} là gì?</h1>
-        {(term.pronunciation || term.aliases.length > 0) && (
+        {(term.pronunciation || aliases.length > 0) && (
           <p className="mt-3 text-stone-500">
             {term.pronunciation && <span className="mr-3">Phát âm: {term.pronunciation}</span>}
-            {term.aliases.length > 0 && <span>Biến thể: {term.aliases.join(", ")}</span>}
+            {aliases.length > 0 && <span>Biến thể: {aliases.join(", ")}</span>}
           </p>
         )}
       </header>
@@ -162,18 +185,6 @@ export default async function TermPage({ params }: Props) {
         </Link>
       </p>
 
-      {term.origin && (
-        <section className="mt-8">
-          <h2 className="text-2xl font-bold">Nguồn gốc</h2>
-          <p className="mt-2 text-stone-700 leading-relaxed">{term.origin}</p>
-        </section>
-      )}
-
-      <div
-        className="prose prose-stone prose-lg mt-8 max-w-none prose-headings:font-bold prose-a:text-brand-600"
-        dangerouslySetInnerHTML={{ __html: term.html }}
-      />
-
       {term.examples.length > 0 && (
         <section className="mt-10">
           <h2 className="text-2xl font-bold">Ví dụ cách dùng &ldquo;{term.term}&rdquo;</h2>
@@ -184,6 +195,32 @@ export default async function TermPage({ params }: Props) {
               </li>
             ))}
           </ul>
+        </section>
+      )}
+
+      {term.origin && !bodyCoversOrigin(term) && (
+        <section className={`${PROSE} mt-10`}>
+          <h2>Nguồn gốc</h2>
+          <p>{term.origin}</p>
+        </section>
+      )}
+
+      <div
+        className={`${PROSE} mt-10`}
+        dangerouslySetInnerHTML={{ __html: term.html }}
+      />
+
+      {videoId && (
+        <section className="mt-10">
+          <h2 className="text-2xl font-bold">Xem video giải thích</h2>
+          <iframe
+            title={`Video: ${term.term} là gì?`}
+            src={`https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(`https://www.facebook.com/reel/${videoId}`)}&show_text=false&width=300`}
+            loading="lazy"
+            allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+            allowFullScreen
+            className="mt-4 mx-auto block w-[300px] max-w-full aspect-[9/16] rounded-2xl border-0 bg-stone-100"
+          />
         </section>
       )}
 
@@ -207,7 +244,7 @@ export default async function TermPage({ params }: Props) {
           <ul className="mt-3 list-disc pl-5 space-y-1 text-stone-700">
             {term.sources.map((s) => (
               <li key={s.url}>
-                <a href={s.url} target="_blank" rel="noopener" className="text-brand-600 hover:underline">
+                <a href={s.url} target="_blank" rel="noopener" className="text-brand-700 hover:underline">
                   {s.title}
                 </a>
               </li>

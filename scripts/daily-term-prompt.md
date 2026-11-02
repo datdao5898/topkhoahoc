@@ -46,12 +46,12 @@ Lệnh này tạo `content/terms/<slug>.md` từ mẫu `content/terms/_template.
 - `short`: 1–2 câu, tối đa khoảng 160 ký tự, bắt đầu bằng “<Thuật ngữ> là …”, trả lời thẳng câu hỏi.
 - `category`: một trong Gen Z, Mạng xã hội, Công nghệ, Tài chính, Marketing, Đời sống, Giải trí, Tâm lý học (bài loại tâm lý học luôn dùng Tâm lý học).
 - `aliases`: các cách viết, biến thể người ta cũng search.
-- `origin`: nguồn gốc ngắn gọn, có mốc thời gian nếu biết chắc.
+- `origin`: nguồn gốc ngắn gọn, có mốc thời gian nếu biết chắc. Đây là chỗ duy nhất kể nguồn gốc, vì trang đã hiện sẵn mục này.
 - `examples`: 2–3 câu ví dụ tự nhiên như người Việt dùng trên mạng.
 - `related`: slug các bài **đã có** trong `content/terms` có liên quan (có thể để `[]`).
 - `faq`: 2–4 câu hỏi người ta hay search kèm, trả lời ngắn.
 - `sources`: 2–3 nguồn **có thật** lấy từ kết quả WebSearch/WebFetch của bạn. Tuyệt đối không bịa URL.
-- Thân bài: Markdown 300–600 chữ, dùng heading `##`. Gồm: nghĩa là gì, vì sao viral, cách dùng/lưu ý.
+- Thân bài: Markdown 300–600 chữ, dùng heading `##`. Gồm: nghĩa là gì, vì sao viral, cách dùng/lưu ý. Không viết mục nguồn gốc và không kể lại `origin`; phần “vì sao viral” chỉ nêu lý do lan truyền.
 - Viết tiếng Việt có dấu, rõ ràng, trung lập, không câu kéo.
 
 ## 4. Kết thúc

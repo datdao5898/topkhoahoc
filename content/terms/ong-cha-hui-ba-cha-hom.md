@@ -5,7 +5,7 @@ bonus: true
 short: "Ông chả húi, bà chả hơm là cách nói lái, nói ngọng cố ý của “ông xã, bà xã”, dùng để gọi người yêu, vợ chồng hay bạn thân một cách đáng yêu, trêu đùa."
 category: Gen Z
 aliases: ["ông chã húi", "ăm chã húi", "ăm chả húi", "bà chã húi", "bà chả húi", "bà chã hơm", "ông chả húi", "bà chả hơm"]
-origin: "Cách gọi này bùng lên trên TikTok từ đầu tháng 6/2026, sau video “Bà chả húi, ăm chả húi ơi” của TikToker Kiệt Hà Tịnh, trong đó một nhân viên quán chào khách bằng giọng nhí nhảnh. Video đạt hơn 3 triệu lượt xem và được dân mạng chia sẻ, chế lại rầm rộ."
+origin: "Cách gọi này bùng lên trên TikTok từ đầu tháng 6/2026, sau video “Bà chả húi, ăm chả húi ơi” của TikToker Kiệt Hà Tịnh (hơn 10 triệu người theo dõi), trong đó một nhân viên quán chào khách bằng giọng nhí nhảnh. Video đạt hơn 3 triệu lượt xem và được dân mạng chia sẻ, lồng tiếng và chế lại khắp TikTok, Facebook, Threads."
 examples:
   - "Ăm chã húi ơi, bà chã húi muốn uống trà sữa nè."
   - "Ông chả húi của bà chả hơm đi làm về chưa đó?"
@@ -39,8 +39,6 @@ Vì vậy, “ông chả húi”, “ông chã húi” hay “ăm chã húi” d
 Chữ “húi” nghe như chê, nhưng thực chất là kiểu **chê yêu**, giống khi người ta gọi người thương là “đồ đáng ghét” hay “đồ hâm”.
 
 ## Vì sao trend này viral?
-
-Theo dân mạng, làn sóng bắt đầu từ đầu tháng 6/2026 khi TikToker Kiệt Hà Tịnh (hơn 10 triệu người theo dõi) đăng video có tiêu đề “Bà chả húi, ăm chả húi ơi”. Trong clip, một nhân viên quán chào khách bằng câu này với giọng điệu lém lỉnh. Video nhanh chóng vượt 3 triệu lượt xem, rồi được chia sẻ, lồng tiếng và chế lại khắp TikTok, Facebook, Threads.
 
 Một vài lý do khiến cụm từ dễ lan truyền:
 

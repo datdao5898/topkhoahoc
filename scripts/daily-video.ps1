@@ -110,3 +110,9 @@ $schedule = if ($when -gt $now.AddMinutes(20)) { " --schedule $($when.ToString('
 if ((Run "node scripts/facebook-video.mjs `"$out`"$schedule") -ne 0) {
   Fail "Chưa đăng được video. Chạy lại: node scripts/facebook-video.mjs `"$out`"$schedule"
 }
+
+# Đưa Reel vào trang thuật ngữ. Lỗi ở đây không ảnh hưởng Reel; file vẫn đổi trên máy nên lần commit sau sẽ mang theo.
+$msgFile = Join-Path $LogDir "commit-msg.txt"
+[System.IO.File]::WriteAllText($msgFile, "Video thuật ngữ: $slug`n`nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>", (New-Object System.Text.UTF8Encoding $false))
+$pushed = (Run "git pull --ff-only") -eq 0 -and (Run "git commit -q -F `"$msgFile`" -- content/videos.json") -eq 0 -and (Run "git push origin main") -eq 0
+if (-not $pushed) { Log "LỖI: chưa đưa được Reel $slug lên trang web (content/videos.json)." }

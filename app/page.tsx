@@ -1,5 +1,6 @@
 import Link from "next/link";
 import TermCard from "@/components/TermCard";
+import TermSearch from "@/components/TermSearch";
 import { FollowCard } from "@/components/FollowFacebook";
 import { formatDate } from "@/lib/format";
 import { getPublishedTerms, getTermOfTheDay } from "@/lib/terms";
@@ -10,7 +11,9 @@ export const revalidate = 3600;
 
 export default function HomePage() {
   const today = getTermOfTheDay();
-  const recent = getPublishedTerms().filter((t) => t !== today);
+  const terms = getPublishedTerms();
+  const recent = terms.filter((t) => t.slug !== today?.slug);
+  const searchItems = terms.map(({ slug, term, short, date, category, aliases }) => ({ slug, term, short, date, category, aliases }));
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -33,12 +36,16 @@ export default function HomePage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
       <section className="text-center mb-10">
-        <p className="text-sm font-semibold uppercase tracking-widest text-brand-600">{SITE.tagline}</p>
+        <p className="text-sm font-semibold uppercase tracking-widest text-brand-700">{SITE.tagline}</p>
         <h1 className="mt-2 text-3xl md:text-5xl font-extrabold">Thấy từ lạ trên mạng? Tra ngay ở đây.</h1>
         <p className="mt-3 text-stone-600 max-w-2xl mx-auto">
           Mỗi ngày giải nghĩa một thuật ngữ, tiếng lóng đang trending trên Facebook, TikTok, Threads… ngắn gọn, dễ hiểu,
           có ví dụ.
         </p>
+      </section>
+
+      <section className="mb-10">
+        <TermSearch terms={searchItems} compact />
       </section>
 
       {today ? (
@@ -59,15 +66,11 @@ export default function HomePage() {
         <p className="text-center text-stone-500">Thuật ngữ đầu tiên sắp lên sóng!</p>
       )}
 
-      <div className="mt-6">
-        <FollowCard title="Mỗi sáng một từ mới trên bảng tin của bạn" />
-      </div>
-
       {recent.length > 0 && (
         <section className="mt-12">
           <div className="flex items-end justify-between mb-4">
             <h2 className="text-2xl font-bold">Thuật ngữ gần đây</h2>
-            <Link href="/thuat-ngu" className="text-sm font-semibold text-brand-600 hover:underline">
+            <Link href="/thuat-ngu" className="text-sm font-semibold text-brand-700 hover:underline">
               Xem tất cả →
             </Link>
           </div>
@@ -78,6 +81,10 @@ export default function HomePage() {
           </div>
         </section>
       )}
+
+      <div className="mt-12">
+        <FollowCard title="Mỗi sáng một từ mới trên bảng tin của bạn" />
+      </div>
     </div>
   );
 }

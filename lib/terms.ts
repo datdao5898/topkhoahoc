@@ -115,6 +115,15 @@ export function getTermOfTheDay(): Term | undefined {
   return published.find((t) => !t.bonus) ?? published[0];
 }
 
+/** Id Reel Facebook của thuật ngữ, chỉ khi Reel đã tới giờ đăng (Reel hẹn giờ chưa nhúng được). */
+export function getTermVideoId(slug: string): string | undefined {
+  const videos: Record<string, { id: string; at: string }> = JSON.parse(
+    fs.readFileSync(path.join(process.cwd(), "content", "videos.json"), "utf8"),
+  );
+  const video = videos[slug];
+  return video && new Date(video.at).getTime() <= Date.now() ? video.id : undefined;
+}
+
 export function getAdjacentTerms(term: Term) {
   const published = getPublishedTerms();
   const i = published.findIndex((t) => t.slug === term.slug);

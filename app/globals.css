@@ -19,3 +19,10 @@ body {
   background: #fafaf9;
   color: var(--color-ink);
 }
+
+/* Tiêu đề xuống dòng cân đối, không để sót một chữ ở dòng cuối. */
+h1,
+h2,
+h3 {
+  text-wrap: balance;
+}

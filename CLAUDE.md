@@ -19,6 +19,7 @@ Mỗi lần push bài mới vào `content/terms/`, GitHub Action `.github/workfl
 - Giọng: VieNeu-TTS, preset **"Hải Đăng"**, chạy trên máy, miễn phí. Văn phong trẻ trung, tếu.
 - Storyboard JSON (`logs/video/`) → `video/photo.py` (tải ảnh + giọng + cảnh) → render HyperFrames → `scripts/facebook-video.mjs`.
 - Mỗi thuật ngữ chỉ đăng video một lần, ghi ở `logs/facebook-videos.json`, tách khỏi `logs/facebook-posted.json` của bài viết.
+- Reel được nhúng vào trang thuật ngữ khi tới giờ đăng, lấy từ `content/videos.json` (có trong repo). `scripts/facebook-video.mjs` ghi file này, `scripts/daily-video.ps1` commit và push.
 - Sửa cách dựng cảnh: `video/photo.py` (kiểu cũ có điện thoại/chat/timeline vẫn ở `video/make.py`). Sửa cách viết kịch bản: `scripts/daily-video-prompt.md`.
 
 ## Đăng Facebook

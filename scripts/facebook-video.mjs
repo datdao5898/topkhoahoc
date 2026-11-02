@@ -56,6 +56,11 @@ const out = execFileSync("node", ["server/scripts/post.mjs", "--project", "topkh
 const result = JSON.parse(out.trim().split("\n").filter((line) => line.startsWith("{")).at(-1));
 posted[board.slug] = { facebookPostId: result.facebookPostId, postedAt: new Date().toISOString(), ...(result.scheduledFor ? { scheduledFor: result.scheduledFor } : {}) };
 fs.writeFileSync(stateFile, JSON.stringify(posted, null, 2));
+// Danh sách Reel để nhúng vào trang thuật ngữ (có trong repo, khác log trên máy). daily-video.ps1 commit file này.
+const siteFile = path.join(repo, "content", "videos.json");
+const siteVideos = JSON.parse(fs.readFileSync(siteFile, "utf8"));
+siteVideos[board.slug] = { id: result.facebookPostId, at: result.scheduledFor ?? new Date().toISOString() };
+fs.writeFileSync(siteFile, JSON.stringify(Object.fromEntries(Object.entries(siteVideos).sort(([a], [b]) => a.localeCompare(b))), null, 2) + "\n");
 fs.rmSync(messageFile, { force: true });
 console.log(result.scheduledFor
   ? `${board.slug}: đã lên lịch Reel ${result.facebookPostId}, Facebook tự đăng lúc ${schedule}`
