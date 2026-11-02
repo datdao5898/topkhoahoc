@@ -45,7 +45,7 @@ Task Scheduler của Windows chạy task **"TopKhoaHoc - Thuat ngu hang ngay"** 
 ## Có sẵn cho SEO & GEO
 
 **SEO (Google):**
-- Tiêu đề dạng “X là gì? Ý nghĩa của "X" trên mạng xã hội”, canonical, Open Graph và ảnh preview tự sinh cho từng thuật ngữ
+- Tiêu đề dạng “X là gì? Ý nghĩa và nguồn gốc” (thuật ngữ quá dài thì đặt `seoTitle` riêng), canonical, Open Graph và ảnh preview tự sinh cho từng thuật ngữ
 - JSON-LD: DefinedTerm, Article (kèm `citation` lấy từ `sources`), FAQPage, BreadcrumbList, Organization, DefinedTermSet
 - `/sitemap.xml`, `/robots.txt`, trang `/gioi-thieu` (quy trình biên tập, tăng độ tin cậy E-E-A-T)
 

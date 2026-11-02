@@ -18,7 +18,7 @@ export function generateStaticParams() {
 }
 
 function pageTitle(term: Term) {
-  return term.seoTitle ?? `${term.term} là gì? Ý nghĩa của "${term.term}" trên mạng xã hội`;
+  return term.seoTitle ?? `${term.term} là gì? Ý nghĩa và nguồn gốc`;
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {

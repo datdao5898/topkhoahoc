@@ -1,5 +1,6 @@
 ---
 term: "Đừng bao giờ khinh thường một bông hoa chưa nở"
+seoTitle: "Đừng khinh thường một bông hoa chưa nở là gì?"
 date: 2026-10-29
 short: "Đừng bao giờ khinh thường một bông hoa chưa nở là câu nói gắn với trend đăng ảnh “trước và sau” trên TikTok, ý nói đừng chê ai khi họ chưa “dậy thì thành công”."
 category: Mạng xã hội
