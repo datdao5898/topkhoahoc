@@ -19,7 +19,19 @@ Giọng đọc là giọng nam (VieNeu-TTS "Hải Đăng"). Video dựng kiểu 
 
 ## Câu hook mở đầu
 
-Người xem quyết định ở lại hay lướt qua trong 1–2 giây đầu, nên **beat đầu tiên phải là hook**: một câu ngắn (≤ 12 chữ), nói thẳng vào tình huống hoặc thắc mắc của người xem, chưa cần nói tên thuật ngữ. Ảnh và thẻ chữ của cảnh mở đầu phải minh hoạ đúng câu hook.
+Người xem quyết định ở lại hay lướt qua trong 3 giây đầu, phần lớn đang tắt tiếng. **Beat đầu tiên phải là hook**, và 3 giây đầu phải đủ cả ba thứ:
+
+- **Câu đọc:** tối đa 12 chữ, đọc xong trong 3 giây (máy đo, dài hơn sẽ bắt viết lại). Nói thẳng vào tình huống hoặc thắc mắc của người xem, chưa cần nói tên thuật ngữ.
+- **Thẻ chữ:** bắt buộc có `title`, hiện ngay từ khung hình đầu. Tắt tiếng chỉ đọc thẻ này vẫn phải thấy tò mò, nên viết thành một ý trọn vẹn, không chỉ là nhãn chủ đề.
+- **Ảnh:** chụp đúng khoảnh khắc trong câu hook, có người hoặc vật nhìn là hiểu ngay. Không dùng ảnh ẩn dụ phải nghĩ mới ra.
+
+Chọn câu hook hợp với thuật ngữ:
+
+- **Hành vi, tâm lý, chuyện đời thường:** mở bằng khoảnh khắc người xem nhận ra mình (khung 1, 2, 3, 8).
+- **Từ lóng, trend đang hot:** mở bằng sự tò mò về chữ đang thấy khắp nơi hoặc cách hiểu sai (khung 5, 10, 11).
+- **Nguồn gốc bất ngờ (khung 13, 14):** chỉ dùng khi chi tiết đó tự nó gây bất ngờ và người xem hiểu ngay. Nếu cần giải thích mới thấy hay thì đưa tình huống đời thường lên trước.
+
+Lấy chi tiết hấp dẫn nhất của kịch bản đưa lên câu đầu, đừng để dành cho câu sau. Sau hook, beat thứ hai và cảnh 2 phải trả lời điều vừa gợi ra, không câu kéo.
 
 Chọn **một** khung dưới đây, thay phần trong ngoặc vuông bằng chi tiết thật của thuật ngữ. Khung chỉ là gợi ý, viết lại cho tự nhiên, xưng "bạn", giữ giọng trẻ trung:
 
@@ -40,7 +52,9 @@ Chọn **một** khung dưới đây, thay phần trong ngoặc vuông bằng ch
 
 Quy tắc:
 
-- **Đổi khung mỗi ngày.** Đọc 3 file mới nhất trong `logs/video/` (theo tên) và không dùng lại khung mà các video đó đã mở đầu.
+- **Đổi khung mỗi ngày.** Đọc 7 file mới nhất trong `logs/video/` (theo tên) và không dùng lại khung hay cách mở câu của các video đó.
+- Không dùng cụm “dính rồi”: đã lặp quá nhiều (máy sẽ bắt viết lại).
+- Cảnh 1 có ít nhất 2 beat: câu hook rồi tới tình huống.
 - Hook không được bịa: không số liệu, không "tôi đã thử", không hứa hẹn kết quả. Mọi chi tiết thật vẫn phải có trong file thuật ngữ.
 - Không dùng hook kiểu bán hàng ("ưu đãi", "đặt ngay", "inbox").
 - Có thể kết video bằng một lời mời bình luận nhẹ ở beat cuối, ví dụ "Bạn từng gặp chưa, kể nghe với!". Không hứa sẽ làm video trả lời.

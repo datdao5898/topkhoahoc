@@ -20,6 +20,7 @@ Mỗi lần push bài mới vào `content/terms/`, GitHub Action `.github/workfl
 - Storyboard JSON (`logs/video/`) → `video/photo.py` (tải ảnh + giọng + cảnh) → render HyperFrames → `scripts/facebook-video.mjs`.
 - Mỗi thuật ngữ chỉ đăng video một lần, ghi ở `logs/facebook-videos.json`, tách khỏi `logs/facebook-posted.json` của bài viết.
 - Reel được nhúng vào trang thuật ngữ khi tới giờ đăng, lấy từ `content/videos.json` (có trong repo). `scripts/facebook-video.mjs` ghi file này, `scripts/daily-video.ps1` commit và push.
+- Hook 3 giây: giọng và thẻ chữ vào từ khung hình đầu, ảnh mở đầu giữ đủ 3 giây, câu hook tối đa 12 chữ và đọc xong dưới 3 giây (`video/photo.py` tự kiểm tra). Cách viết hook ở `scripts/daily-video-prompt.md`.
 - Sửa cách dựng cảnh: `video/photo.py` (kiểu cũ có điện thoại/chat/timeline vẫn ở `video/make.py`). Sửa cách viết kịch bản: `scripts/daily-video-prompt.md`.
 
 ## Đăng Facebook

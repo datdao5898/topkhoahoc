@@ -18,6 +18,8 @@ M.VOICE = "Hải Đăng"
 r, esc, fail = M.r, M.esc, M.fail
 W, H = 1080, 1920
 XF = 0.5          # hoà tan giữa ảnh / giữa cảnh
+HOOK_HOLD = 3.0   # 3 giây đầu: câu hook đọc xong, ảnh và thẻ mở đầu đứng yên, chưa đổi cảnh
+HOOK_WORDS = 12   # câu hook tối đa bao nhiêu chữ (giọng Hải Đăng đọc 12 chữ khoảng 2,4 giây)
 AMBER, CREAM, INK = "#f4b63f", "#fff4e0", "#17140f"
 UA = "topkhoahoc-video/1.0 (https://topkhoahoc.online)"
 API = "https://commons.wikimedia.org/w/api.php"
@@ -73,6 +75,18 @@ def load(path):
         fail("cần 5–9 cảnh")
     if not scenes[-1].get("outro"):
         fail("cảnh cuối phải có \"outro\": true")
+    # Quy tắc hook 3 giây: câu ngắn, có thẻ chữ thường để hiện từ khung hình đầu, cảnh mở đầu còn beat sau để giữ nhịp.
+    opening = scenes[0].get("beats") or []
+    if len(opening) < 2:
+        fail("cảnh 1 cần ít nhất 2 beat: câu hook rồi tới tình huống")
+    hook = opening[0]
+    if len(str(hook.get("say", "")).split()) > HOOK_WORDS:
+        fail(f"câu hook tối đa {HOOK_WORDS} chữ: {hook.get('say')}")
+    if "dính rồi" in str(hook.get("say", "")).lower():
+        fail("câu hook không dùng cụm 'dính rồi' (đã lặp nhiều), viết cách khác")
+    hook_card = hook.get("card") or {}
+    if not hook_card.get("title") or hook_card.get("keep") or hook_card.get("dialog"):
+        fail("beat đầu tiên phải có thẻ chữ với 'title' (không dùng keep/dialog), để người tắt tiếng vẫn đọc được hook")
     used = set()
     for i, sc in enumerate(scenes, 1):
         beats = sc.get("beats") or []
@@ -336,6 +350,9 @@ def claude_pick(sb, out, pending):
              "không phải tranh vẽ. Ảnh chỉ hợp mơ hồ hoặc lạc đề thì ghi 0.\n"]
     for pid, n in pending.items():
         parts.append(f"\n## {pid}: `.cand/{pid}.jpg` ({n} ảnh)\n{scene_text(sb, pid)}\n")
+        if pid == sb["scenes"][0]["beats"][0]["photo"]:
+            parts.append("Đây là ảnh mở đầu: người xem quyết định ở lại trong 3 giây đầu, nên ưu tiên ảnh sáng rõ, "
+                         "nhìn là thấy ngay người hoặc khoảnh khắc đúng câu hook.\n")
     parts.append("\nGhi kết quả vào `.cand/picks.json` (UTF-8), dạng `{\"p1\": 2, \"p2\": 0, ...}` (số thứ tự ảnh, 0 = không ảnh nào hợp), "
                  "kèm khoá `\"why\"` là object ghi lý do ngắn cho mỗi ảnh chọn 0. Rồi dừng.\n")
     (cand / "PICK.md").write_text("".join(parts), encoding="utf-8")
@@ -443,9 +460,14 @@ def build_scene(k, sc, start, dur, term, total_scenes):
     beats = sc["beats"]
     # --- ảnh: mỗi beat có "photo" mở một shot mới ---
     shots = [(j, b) for j, b in enumerate(beats) if b.get("photo")]
+
+    def shot_at(n):
+        at = shots[n][1]["_start"] - 0.3 - start
+        return max(at, HOOK_HOLD) if k == 0 and n == 1 else at  # ảnh hook giữ đủ 3 giây đầu
+
     for n, (j, b) in enumerate(shots):
-        a = 0.0 if n == 0 else b["_start"] - 0.3 - start
-        e = (shots[n + 1][1]["_start"] - 0.3 - start + XF) if n + 1 < len(shots) else dur
+        a = 0.0 if n == 0 else shot_at(n)
+        e = (shot_at(n + 1) + XF) if n + 1 < len(shots) else dur
         html.append(f'<div id="{p}-sh{n}" class="shot"><img id="{p}-im{n}" src="assets/photos/{b["photo"]}.jpg" alt=""></div>')
         z0, z1 = (1.0, 1.12) if (k + n) % 2 == 0 else (1.12, 1.02)
         y0, y1 = (30, -30) if n % 2 == 0 else (-20, 20)
@@ -490,6 +512,11 @@ def build_scene(k, sc, start, dur, term, total_scenes):
         for n, (j, b) in enumerate(cards):
             c = b["card"]
             t = b["_start"] - start - 0.1
+            is_hook = k == 0 and n == 0
+            if is_hook:
+                t = 0.0
+            elif k == 0 and n == 1:
+                t = max(t, HOOK_HOLD + 0.3)  # thẻ hook rời đi đúng lúc ảnh bắt đầu đổi
             cid = f"{p}-c{n}"
             if c.get("keep") and live:   # chỉ thêm dòng phụ vào thẻ đang hiện
                 html.append(f'<div id="{cid}" class="subline" style="top:{live[1]}px">{esc(c["sub"])}</div>')
@@ -525,12 +552,18 @@ def build_scene(k, sc, start, dur, term, total_scenes):
   {echo}{th}
   {f'<div class="sub" id="{cid}-s">{esc(c["sub"])}</div>' if c.get("sub") else ""}
 </div>''')
-            js += [f'tl.fromTo("#{cid}", {{ opacity: 0 }}, {{ opacity: 1, duration: 0.15, ease: "none" }}, {r(t)});',
-                   f'tl.fromTo("#{cid}-r", {{ strokeDashoffset: 1 }}, {{ strokeDashoffset: 0, duration: 0.7, ease: "power2.inOut" }}, {r(t)});',
-                   f'tl.fromTo(".{cid}-ip", {{ strokeDashoffset: 1 }}, {{ strokeDashoffset: 0, duration: 0.7, ease: "power2.out", stagger: 0.08 }}, {r(t + 0.15)});',
-                   f'tl.fromTo("#{cid}-k", {{ opacity: 0, x: -30 }}, {{ opacity: 1, x: 0, duration: 0.45, ease: "power3.out" }}, {r(t + 0.1)});',
-                   f'tl.fromTo("#{cid} .tli", {{ yPercent: 110 }}, {{ yPercent: 0, duration: 0.6, ease: "power4.out", stagger: 0.09 }}, {r(t + 0.2)});']
-            if c.get("sub"):
+            if is_hook:  # đọc được ngay từ khung hình đầu (người lướt thường tắt tiếng), chữ chỉ nhích nhẹ để gây chú ý
+                js += [f'tl.set("#{cid}", {{ opacity: 1 }}, 0);',
+                       f'tl.fromTo("#{cid} .tli", {{ scale: 1.07, transformOrigin: "0% 50%" }}, {{ scale: 1, duration: 0.5, ease: "power3.out" }}, 0);']
+            else:
+                js += [f'tl.fromTo("#{cid}", {{ opacity: 0 }}, {{ opacity: 1, duration: 0.15, ease: "none" }}, {r(t)});',
+                       f'tl.fromTo("#{cid}-r", {{ strokeDashoffset: 1 }}, {{ strokeDashoffset: 0, duration: 0.7, ease: "power2.inOut" }}, {r(t)});',
+                       f'tl.fromTo(".{cid}-ip", {{ strokeDashoffset: 1 }}, {{ strokeDashoffset: 0, duration: 0.7, ease: "power2.out", stagger: 0.08 }}, {r(t + 0.15)});',
+                       f'tl.fromTo("#{cid}-k", {{ opacity: 0, x: -30 }}, {{ opacity: 1, x: 0, duration: 0.45, ease: "power3.out" }}, {r(t + 0.1)});',
+                       f'tl.fromTo("#{cid} .tli", {{ yPercent: 110 }}, {{ yPercent: 0, duration: 0.6, ease: "power4.out", stagger: 0.09 }}, {r(t + 0.2)});']
+            if c.get("sub") and is_hook:
+                js.append(f'tl.set("#{cid}-s", {{ opacity: 1 }}, 0);')
+            elif c.get("sub"):
                 js.append(f'tl.fromTo("#{cid}-s", {{ opacity: 0, y: 24 }}, {{ opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }}, {r(t + 0.6)});')
             if c.get("echo"):
                 js += [f'tl.fromTo("#{cid}-echo", {{ opacity: 0, x: 0, y: 0 }}, {{ opacity: 0.55, x: 14, y: 12, duration: 0.5, ease: "power2.out" }}, {r(t + 0.5)});',
@@ -613,8 +646,13 @@ def main():
         speech_end = data["end"]
     else:
         print(f"Tạo giọng đọc ({M.VOICE})…", flush=True)
-        beats, speech_end = M.voice(sb, out)
+        beats, speech_end = M.voice(sb, out, lead=0)  # giọng vào ngay từ khung hình đầu
         timing.write_text(json.dumps({"beats": [[b["_start"], b["_dur"]] for _, b in beats], "end": speech_end}), encoding="utf-8")
+    hook_dur = beats[0][1]["_dur"]
+    if hook_dur > HOOK_HOLD:
+        if "--lenient" not in sys.argv:
+            fail(f"câu hook đọc mất {r(hook_dur)} giây, phải dưới {HOOK_HOLD} giây. Viết ngắn lại: {beats[0][1]['say']}")
+        print(f"  (câu hook đọc mất {r(hook_dur)} giây, hơi dài)", flush=True)
     total = round(speech_end + M.END_HOLD, 2)
     scenes = sb["scenes"]
     starts = [0.0] + [max(0.0, sc["beats"][0]["_start"] - 0.3) for sc in scenes[1:]]

@@ -92,14 +92,14 @@ def gap_after(text, last_in_scene):
     return {".": 0.32, "!": 0.32, "?": 0.32, ":": 0.22, ",": 0.15}.get(end, 0.2)
 
 
-def voice(sb, out):
+def voice(sb, out, lead=0.3):
     from vieneu import Vieneu
     tmp = out / ".vo"
     tmp.mkdir(parents=True, exist_ok=True)
     tts = Vieneu()
     beats = [(si, b) for si, sc in enumerate(sb["scenes"]) for b in sc["beats"]]
-    t = 0.3
-    parts = [(None, 0.3)]
+    t = lead
+    parts = [(None, lead)] if lead else []
     for n, (si, b) in enumerate(beats):
         text = b["say"].strip()
         for attempt in range(4):
