@@ -541,6 +541,10 @@ def build_scene(k, sc, start, dur, term, total_scenes):
             text = c["title"]
             longest = max(len(x) for x in text.split("\n"))
             size = 150 if longest <= 9 else 124 if longest <= 11 else 104
+            # Chỉ đếm ký tự thì chưa đủ: chữ hoa BVP 900 rộng ~0.76em (đo: "QUANG" 150px = 569px),
+            # nên "HÀO QUANG" 150px vượt khung 920px, tự xuống dòng và đè lên dòng phụ.
+            em = max(sum(0.25 if ch == " " else 0.76 if ch.isupper() or ch.isdigit() else 0.56 for ch in x) for x in text.split("\n"))
+            size = min(size, int(900 / max(em, 1)))
             if text.count("\n") >= 2:
                 size = min(size, 108)  # 3 dòng: thu nhỏ để dòng phụ/keep không đè lên phụ đề (top 1150)
             th, nrows = title_html(f"{cid}-t", text, size)
@@ -586,7 +590,7 @@ def build_scene(k, sc, start, dur, term, total_scenes):
             f"#{p} .ico path {{ stroke-dasharray: 1; }}",
             f"#{p} .kick {{ margin-top: 30px; font-family: BVP; font-weight: 800; font-size: 40px; letter-spacing: .12em; color: {AMBER}; text-shadow: 0 2px 14px rgba(0,0,0,.5); }}",
             f"#{p} .title {{ position: relative; margin-top: 8px; font-family: BVP; font-weight: 900; line-height: 1.04; letter-spacing: -0.02em; color: {CREAM}; text-shadow: 0 6px 34px rgba(0,0,0,.55); }}",
-            f"#{p} .tl {{ overflow: hidden; padding-bottom: .06em; }} #{p} .tli {{ display: block; }}",
+            f"#{p} .tl {{ overflow: hidden; padding-bottom: .06em; }} #{p} .tli {{ display: block; white-space: nowrap; }}",
             f"#{p} .echo {{ position: absolute; left: 0; top: 198px; font-family: BVP; font-weight: 900; line-height: 1.1; letter-spacing: -0.02em; color: transparent; -webkit-text-stroke: 3px {AMBER}; opacity: 0; }}",
             f"#{p} .sub {{ margin-top: 22px; font-family: BVP; font-weight: 500; font-size: 50px; color: {CREAM}; text-shadow: 0 2px 18px rgba(0,0,0,.6); }}",
             f"#{p} .subline {{ position: absolute; left: 80px; width: 920px; font-family: BVP; font-weight: 800; font-size: 54px; line-height: 1.2; color: {AMBER}; text-shadow: 0 2px 18px rgba(0,0,0,.6); }}",
