@@ -8,7 +8,7 @@
 # Nguồn ảnh: Pexels / Pixabay nếu có key (pexels-key.txt / pixabay-key.txt trong C:\Users\datda\Videos\topkhoahoc,
 #   hoặc PEXELS_API_KEY / PIXABAY_API_KEY), thiếu thì bù bằng Commons.
 # Muốn tự chọn ảnh: bỏ file <out>/assets/photos/<id>.jpg vào trước (đã có thì không tải lại).
-import json, math, pathlib, subprocess, sys, time, urllib.parse, urllib.request
+import json, math, pathlib, subprocess, sys, time, urllib.error, urllib.parse, urllib.request
 
 HERE = pathlib.Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
@@ -294,9 +294,20 @@ def candidates(queries, taken, n):
     return got
 
 
-def get(url, dst):
-    with urllib.request.urlopen(urllib.request.Request(url, headers={"User-Agent": UA}), timeout=120) as f:
-        dst.write_bytes(f.read())
+def get(url, dst, tries=5):
+    """Tải file. Kho ảnh báo 429 (tải dồn dập quá) hay lỗi 5xx thì chờ rồi thử lại, thay vì làm hỏng cả video."""
+    for k in range(tries):
+        try:
+            with urllib.request.urlopen(urllib.request.Request(url, headers={"User-Agent": UA}), timeout=120) as f:
+                dst.write_bytes(f.read())
+            return
+        except urllib.error.HTTPError as e:
+            if k == tries - 1 or not (e.code == 429 or e.code >= 500):
+                raise
+            ra = e.headers.get("Retry-After", "")
+            wait = min(int(ra), 120) if ra.isdigit() else 5 * 2 ** k
+            print(f"  (tải ảnh lỗi {e.code}, chờ {wait}s rồi thử lại)", flush=True)
+            time.sleep(wait)
 
 
 def cover(src, dst, w, h, q=3):
