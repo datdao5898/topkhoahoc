@@ -1,7 +1,7 @@
 # Viết storyboard video cho thuật ngữ
 
-Bạn viết kịch bản cho một video dọc 60–80 giây giới thiệu tản mạn một thuật ngữ, đăng Facebook Reels / TikTok / YouTube Shorts.
-Giọng đọc là giọng nam (VieNeu-TTS "Hải Đăng"). Video dựng kiểu **ảnh thật**: mỗi cảnh là ảnh chụp toàn khung (máy tự tìm ảnh CC0 trên Wikimedia Commons theo từ khoá tiếng Anh bạn ghi), zoom chậm, chuyển cảnh hoà tan, phía trên có thẻ chữ + icon. Máy đọc từng câu `say` và dựng hình theo từng câu, nên bạn chỉ cần viết **một file JSON** đúng định dạng dưới đây, không làm gì khác.
+Bạn viết kịch bản cho một video dọc 55–80 giây giới thiệu tản mạn một thuật ngữ, đăng Facebook Reels / TikTok / YouTube Shorts.
+Giọng đọc là giọng nam (VieNeu-TTS "Hải Đăng"). Video dựng kiểu **người que**: nét mực trên nền giấy tập, mỗi câu đọc là một cảnh nhỏ có nhân vật làm động tác hoặc tương tác với nhau (chạy, đập tay, nhắn tin, bấm hộp thoại, giơ biển…). Phía trên có thẻ chữ, phía dưới có phụ đề. Máy đọc từng câu `say` rồi dựng cảnh theo từng câu, nên bạn chỉ cần viết **một file JSON** đúng định dạng dưới đây, không làm gì khác.
 
 ## Nguồn
 
@@ -14,7 +14,7 @@ Giọng đọc là giọng nam (VieNeu-TTS "Hải Đăng"). Video dựng kiểu 
 - Mở bằng một câu hook (xem phần "Câu hook mở đầu" bên dưới) và một tình huống người xem nhận ra ngay (một khoảnh khắc đời thường), chưa nói tên thuật ngữ. Gọi tên ở cảnh 2.
 - Kết bằng một câu nhẹ nhàng, có ý nghĩa, không giáo điều.
 - Tổng cộng khoảng **170–230 chữ** trong các `say` (video 55–80 giây; dưới 160 chữ là quá ngắn). Mỗi `say` là **một câu** (tối đa ~25 chữ).
-- Beat có `dialog`: câu `say` nên đọc luôn nội dung hộp thoại, và chữ trong hộp thoại ngắn (≤ 10 chữ), nếu không người xem đọc không kịp.
+- Beat có cảnh `dialog` hoặc `chat`: câu `say` nên đọc luôn ý của hộp thoại / tin nhắn, chữ trên hình ngắn, nếu không người xem đọc không kịp.
 - Trong `say`, viết số bằng chữ để máy đọc đúng ("năm một chín bảy tám", "hơn hai mươi lăm nghìn"); khi đó thêm `cap` là câu hiển thị phụ đề có số ("Năm 1978, …"). Từ tiếng Anh giữ nguyên (máy đọc được). Từ tiếng Pháp, Nhật, Hàn… thì viết phiên âm tiếng Việt trong `say` ("đề gia vu") và giữ chữ gốc trong `cap` ("déjà vu").
 
 ## Câu hook mở đầu
@@ -23,7 +23,7 @@ Người xem quyết định ở lại hay lướt qua trong 3 giây đầu, ph�
 
 - **Câu đọc:** tối đa 12 chữ, đọc xong trong 3 giây (máy đo, dài hơn sẽ bắt viết lại). Nói thẳng vào tình huống hoặc thắc mắc của người xem, chưa cần nói tên thuật ngữ.
 - **Thẻ chữ:** bắt buộc có `title`, hiện ngay từ khung hình đầu. Tắt tiếng chỉ đọc thẻ này vẫn phải thấy tò mò, nên viết thành một ý trọn vẹn, không chỉ là nhãn chủ đề.
-- **Ảnh:** chụp đúng khoảnh khắc trong câu hook, có người hoặc vật nhìn là hiểu ngay. Không dùng ảnh ẩn dụ phải nghĩ mới ra.
+- **Cảnh:** người que làm đúng khoảnh khắc trong câu hook, nhìn là hiểu ngay (ví dụ: lướt điện thoại mà màn hình phóng to ra thấy chuyện lạ, hai người nhắn tin, cả đám cùng làm một việc). Không dùng cảnh ẩn dụ phải nghĩ mới ra.
 
 Chọn câu hook hợp với thuật ngữ:
 
@@ -63,89 +63,100 @@ Quy tắc:
 
 ```json
 {
-  "style": "photo",
+  "style": "stick",
   "term": "Tên thuật ngữ như trong file",
   "slug": "slug-file",
   "caption": "Mô tả bài Facebook: 1–3 câu, có 1 emoji, gợi tò mò. Không chèn link, không hashtag (máy tự thêm).",
-  "photos": { "p1": ["english keywords", "từ khoá dự phòng"], "p2": ["..."] },
-  "scenes": [ { "beats": [ { "say": "...", "photo": "p1", "card": { "...": "..." } } ] }, { "outro": true, "beats": [ { "say": "...", "photo": "p9" } ] } ]
+  "scenes": [ { "beats": [ { "say": "...", "card": { "...": "..." }, "scene": { "type": "...", "...": "..." } } ] }, { "outro": true, "beats": [ { "say": "..." } ] } ]
 }
 ```
 
-- **5–8 cảnh**, mỗi cảnh 1–4 beat. Cảnh cuối là `{"outro": true}` với **đúng 1 beat** có `photo` và không có `card` (thẻ "Mỗi ngày một thuật ngữ · topkhoahoc.online" tự thêm).
-- Mỗi `beat` có `say` (bắt buộc), `cap` (tuỳ chọn), `photo` (tuỳ chọn), `card` (tuỳ chọn).
-- **Beat đầu của mỗi cảnh phải có `photo`.** Beat sau có `photo` thì đổi sang ảnh mới (hoà tan); không có thì giữ ảnh cũ. Đổi ảnh khoảng mỗi 3–7 giây (mỗi 1–2 beat).
-
-### Ảnh (`photos`)
-
-- 8–12 ảnh, id `p1`, `p2`, …; ảnh nào khai báo cũng phải được dùng, mỗi ảnh dùng một lần.
-- Giá trị là danh sách 2–3 từ khoá **tiếng Anh, đơn giản, cụ thể, chụp được**: người + hành động + nơi chốn ("woman looking at phone", "friends laughing", "coffee shop", "laptop chart"). Từ khoá sau là phương án dự phòng, chung hơn ("woman phone", "friends").
-- Máy lấy vài ảnh ứng viên cho mỗi từ khoá (kho Pexels / Pixabay nếu có key, rồi Wikimedia Commons), sau đó **Claude xem từng ảnh và chọn ảnh hợp câu đọc nhất**; không ảnh nào hợp thì bạn sẽ được yêu cầu viết lại từ khoá, kèm lý do. Nên từ khoá phải tả **đúng cảnh trong câu đọc** (ai, đang làm gì, ở đâu, cảm xúc gì).
-- Với Commons: máy tìm trong kho ảnh Unsplash trên Wikimedia Commons trước (ảnh đời thường, phần lớn ở phương Tây), không có thì tìm ảnh CC0 khác trên Commons. **Tên file ảnh phải chứa mọi chữ trong từ khoá**, nên viết từ khoá như tên một bức ảnh mô tả thẳng: "woman sitting alone", "couple holding hands", "pills in blister pack", "doctor stethoscope", "friends laughing". Đừng ghép tính từ cảm xúc khó có trong tên ảnh ("woman reading paper worried" sẽ không ra).
-- Không tìm được khái niệm trừu tượng ("gaslighting", "anxiety"), người nổi tiếng, logo, chữ, ảnh chụp màn hình, ảnh tin tức. Hãy chọn ảnh **gợi tâm trạng/tình huống**: buồn → "woman sitting alone"; áp lực → "stressed woman"; tình yêu → "couple holding hands".
-- Mỗi ảnh nên có 2–3 từ khoá: từ khoá chính cụ thể, từ khoá sau chung hơn nhưng **vẫn giữ danh từ chính** (đừng lùi về một chữ trơ trọi như "woman", "doctor": dễ ra ảnh lạc đề). Hết từ khoá mà không ra ảnh thì máy báo lỗi và bạn sẽ được yêu cầu viết lại.
-- Ảnh bị cắt dọc 9:16 và có lớp tối phía trên (chỗ đặt thẻ chữ), nên chọn ảnh có chủ thể rõ.
+- **5–8 cảnh**, mỗi cảnh 1–4 beat. Cảnh cuối là `{"outro": true}` với **đúng 1 beat** chỉ có `say` (và `cap` nếu cần). Máy tự dựng cảnh về đích, pháo giấy, nhân vật vẫy tay, thẻ "Mỗi ngày một thuật ngữ · topkhoahoc.online".
+- Mỗi `beat` có `say` (bắt buộc), `cap` (tuỳ chọn), `card` (tuỳ chọn), `scene` (tuỳ chọn).
+- **Beat đầu của mỗi cảnh phải có `scene`.** Beat sau có `scene` thì đổi sang cảnh mới; không có thì giữ cảnh cũ (nhân vật vẫn tiếp tục động tác). Nên đổi cảnh ở **hầu hết các beat** (khoảng 3–5 giây một lần) cho video sinh động.
+- **Đa dạng loại cảnh:** cả video dùng ít nhất 5 loại `type` khác nhau, `act` không quá một nửa số cảnh. Ưu tiên cảnh có **tương tác**: `duo`, `chat`, `phone`, `dialog`, `panels`, `versus`.
 
 ### Thẻ chữ (`card`)
 
-Một thẻ hiện ở nửa trên màn hình cho tới khi thẻ sau thay. Phụ đề (câu `say`) đã có ở giữa màn hình, nên chữ trên thẻ **ngắn**, chỉ ý chính.
+Thẻ hiện ở nửa trên màn hình cho tới thẻ sau, hết cảnh thì tắt. Phụ đề (câu `say`) đã có ở dưới, nên chữ trên thẻ **ngắn**, chỉ ý chính.
 
 | Trường | Ý nghĩa |
 |---|---|
-| `icon` | Icon vẽ nét trong vòng tròn: `question` `eye` `spark` `book` `brain` `users` `battery` `smile` `heart` `flag` `alert` `chat` `phone` `clock` `check` `cross` `bulb` `star` `money` `chart` `fire` `globe` `lock` `shield` `music` `coffee` `search` |
-| `kicker` | Dòng nhỏ màu vàng phía trên (≤ 30 ký tự): "Thuật ngữ hôm nay", "Nguồn gốc", "Vì sao vậy?", "Lưu ý" |
-| `title` | Chữ to, **mỗi dòng ≤ 14 ký tự**, xuống dòng bằng `\n`, tối đa 3 dòng |
+| `kicker` | Dòng nhỏ màu đỏ phía trên (≤ 30 ký tự): "Thuật ngữ hôm nay", "Nguồn gốc", "Vì sao vậy?", "Lưu ý" |
+| `title` | Chữ to, **mỗi dòng ≤ 14 ký tự**, xuống dòng bằng `\n`, tối đa 3 dòng. Dòng cuối được tô vàng (khi có từ 2 dòng) |
 | `sub` | Dòng phụ dưới tiêu đề (≤ 44 ký tự) |
-| `echo` | `true`: thêm bóng chữ viền vàng. **Chỉ dùng cho thẻ gọi tên thuật ngữ** (cảnh 2) |
-| `keep` | `{"sub": "...", "keep": true}`: không thay thẻ, chỉ thêm một dòng vàng dưới thẻ đang hiện (phải có thẻ khác trước nó trong cùng cảnh) |
-| `dialog` | Hộp thoại kiểu máy tính thay cho thẻ: `{"title": "≤ 20 ký tự", "text": "≤ 10 chữ", "buttons": ["Nút phụ", "Nút chính"], "note": "(tuỳ chọn) dòng ghi chú hiện sau"}`. Dùng tối đa 1 lần, cho một ví von vui |
+| `big` | `true`: tiêu đề chữ khối Anton rơi từng chữ + vệt vàng. **Chỉ dùng cho thẻ gọi tên thuật ngữ** (cảnh 2), 1 dòng, ≤ 12 ký tự (tên dài thì bỏ `big`, viết `title` 2 dòng) |
+| `keep` | `{"sub": "...", "keep": true}`: không thay thẻ, chỉ thêm một dòng đỏ dưới thẻ đang hiện (≤ 40 ký tự; phải có thẻ khác trước nó trong cùng cảnh) |
 
-- Beat không có `card` thì giữ thẻ cũ (đừng để quá 2 beat liền như vậy).
-- Thẻ gọi tên: `{"icon": "spark", "kicker": "Thuật ngữ hôm nay", "title": "TÊN IN HOA", "echo": true}`, beat sau dùng `keep` để thêm nghĩa ngắn.
+- Beat có `scene` loại `dialog` thì **không có `card`** (hộp thoại chiếm chỗ thẻ, thẻ đang hiện sẽ tạm ẩn).
+- Thẻ gọi tên: `{"kicker": "Thuật ngữ hôm nay", "title": "TÊN IN HOA", "big": true}`, beat sau dùng `keep` để thêm nghĩa ngắn.
 
-Gợi ý mạch: tình huống (hook, 1–2 ảnh) → gọi tên + nghĩa → nguồn gốc (năm, người) → vì sao hot / con số → dấu hiệu / ví dụ (có thể một `dialog` vui) → lưu ý → `outro` (lời mời bình luận nhẹ).
+### Cảnh (`scene`)
+
+Sân khấu nằm giữa thẻ chữ và phụ đề. Nhân vật là người que; `mood` đổi nét mặt; `look`: `"nam"` (mặc định), `"nu"` (có tóc buộc), `"kinh"` (đeo kính đen).
+
+**Động tác** (`do`, dùng trong nhiều loại cảnh):
+`stand` đứng · `walk` đi bộ · `run` chạy (đổ mồ hôi) · `jump` nhảy · `cheer` giơ hai tay ăn mừng · `think` tay chống cằm + bong bóng suy nghĩ · `idea` nghĩ rồi bật bóng đèn · `shrug` nhún vai · `facepalm` ôm mặt · `wave` vẫy tay · `point` chỉ lên tiêu đề · `phone` cầm điện thoại · `selfie` chụp ảnh tự sướng · `laptop` ngồi gõ máy tính · `sit` ngồi ghế · `read` đọc sách · `sleep` nằm ngủ (zzz) · `cry` khóc · `lift` nâng tạ · `push` đẩy xe trượt · `pull` kéo dây · `carry` bê thùng · `dance` nhảy múa (nốt nhạc) · `angry` tức (bốc khói) · `love` thả tim · `shock` giật mình "!!" · `scared` run sợ · `tired` mệt rã rời · `money` cầm tiền (đồng xu bay) · `eat` ăn
+
+**Mood:** `happy` `grin` `sad` `shock` `tired` `angry` `neutral` `love` `scared` `proud`
+
+| `type` | Trường | Dùng khi |
+|---|---|---|
+| `act` | `do` (bắt buộc), `mood`, `look`, `bubble` (lời nói ≤ 24 ký tự), `think` (chữ trong bong bóng suy nghĩ ≤ 18, khi `do` là `think`), `label` (nhãn dưới chân ≤ 22) | Một nhân vật làm một việc |
+| `duo` | `do`: `talk` nói chuyện · `argue` cãi nhau · `ignore` một người nói, người kia cắm mặt vào điện thoại · `highfive` đập tay · `hug` ôm · `give` đưa món quà (`item` ≤ 14 ký tự) · `chase` rượt nhau · `doctor` bác sĩ khám; `left` / `right`: `{"say": "≤ 24 ký tự", "mood": "...", "look": "...", "label": "≤ 16"}` | Hai người tương tác. Người trái nói trước, người phải đáp sau |
+| `phone` | `msgs`: tối đa 3 tin nhắn `{"text": "≤ 40", "me": true/false}` **hoặc** `show`: một động tác; `top`: dòng chữ đỏ trên màn hình (≤ 18), `mood` | Một người lướt điện thoại, màn hình phóng to ra bên phải. Rất hợp cho hook |
+| `chat` | `name` (tên cuộc trò chuyện ≤ 20), `msgs`: 2–4 tin `{"text": "≤ 60", "me": true/false}` | Khung chat to, tin nhắn hiện lần lượt (me = bên phải, nền vàng) |
+| `panels` | `items`: 2–4 ô `{"do": "...", "label": "≤ 18", "mood": "..."}` | Liệt kê các bước, dấu hiệu, ví dụ: mỗi ô một nhân vật làm một việc, hiện lần lượt |
+| `dialog` | `title` (≤ 24), `text` (≤ 40), `buttons`: 1–2 nút (≤ 10 ký tự, nút chính để cuối), `note` (≤ 28), `mood` | Hộp thoại kiểu máy tính; nhân vật với tay bấm nút phụ, có `note` thì nút phụ bị gạch + hiện ghi chú, rồi bấm nút chính. Tối đa 1 lần, cho một ví von vui |
+| `sign` | `text` (≤ 24), `color`: `"yellow"` / `"red"` (tuỳ chọn), `mood` | Nhân vật giơ biển: một câu khẩu hiệu, tên gọi, con số ngắn |
+| `calendar` | `month` (≤ 16, ví dụ "THÁNG 3 · 2027"), `day` (≤ 7, ví dụ "6–7", "1964"), `stamp` (≤ 12, ví dụ "DỰ KIẾN") | Ngày tháng, năm ra đời |
+| `stat` | `value` (≤ 9 ký tự: "38", "25.000+", "70%"), `label` (≤ 40), `do` (mặc định `shock`) | Một con số có trong file thuật ngữ (số chạy tăng dần) |
+| `versus` | `left` / `right`: `{"label": "≤ 16", "do": "...", "mood": "..."}` | So sánh hai phía, hai cách làm, đúng/sai |
+| `crowd` | `do`, `count` (3–7), `label` (≤ 24), `mood` | Cả đám cùng làm một việc: trend lan rộng, ai cũng vậy |
+| `icons` | `items`: 1–3 `{"icon": "...", "label": "≤ 14"}`, `do` | Vài ý ngắn kèm icon: `question` `eye` `spark` `book` `brain` `users` `battery` `smile` `heart` `flag` `alert` `chat` `phone` `clock` `check` `cross` `bulb` `star` `money` `chart` `fire` `globe` `lock` `shield` `music` `coffee` `search` |
+| `board` | `lines`: 1–4 dòng (≤ 22 ký tự) | Nhân vật đeo kính cầm que chỉ bảng: định nghĩa, các bước, mẹo |
+
+Gợi ý mạch: tình huống (hook: `phone` / `chat` / `crowd` / `duo`) → gọi tên + nghĩa (`act` với `point` hoặc `cheer`, thẻ `big`) → nguồn gốc (`calendar`, `sign`, `stat`) → vì sao hot / dấu hiệu / ví dụ (`panels`, `icons`, `versus`, `duo`, có thể một `dialog` vui) → lưu ý (`board`, `duo` `doctor`, `act` `think`) → `outro` (lời mời bình luận nhẹ).
+
+Chọn động tác **khớp nghĩa câu đọc**: câu nói về mệt thì `tired` / `run`, nhắn tin thì `chat` / `phone`, tức giận thì `argue` / `angry`, vui thì `cheer` / `dance`… Đừng dùng `stand` cho mọi thứ.
 
 ## Ví dụ (rút gọn)
 
 ```json
 {
-  "style": "photo",
+  "style": "stick",
   "term": "Déjà vu",
   "slug": "deja-vu",
   "caption": "Lạ mà quen, như đã sống qua một lần rồi? 🌀 Cảm giác đó có tên đó nha.",
-  "photos": {
-    "p1": ["visiting paris street", "city street"],
-    "p2": ["hallway of marble arches", "hallway"],
-    "p3": ["hallway with pillars", "corridor"],
-    "p4": ["confused neon", "neon sign"],
-    "p5": ["reading mail at night", "laptop night"],
-    "p6": ["young explorer", "person smiling outdoors"]
-  },
   "scenes": [
     {"beats": [
-      {"say": "Bạn đã bao giờ bước vào một nơi hoàn toàn lạ, mà thấy quen quen chưa?", "photo": "p1",
-       "card": {"icon": "question", "kicker": "Bạn có từng…", "title": "Lạ mà quen?"}},
-      {"say": "Kiểu như cảnh này, mình đã sống qua một lần rồi á.", "photo": "p2",
-       "card": {"icon": "eye", "kicker": "Khoan đã…", "title": "Cảnh này\nquen lắm nha"}}
+      {"say": "Bạn đã bao giờ bước vào một nơi hoàn toàn lạ, mà thấy quen quen chưa?",
+       "card": {"kicker": "Bạn có từng…", "title": "Lạ mà quen?"},
+       "scene": {"type": "act", "do": "think", "think": "Ủa, quen quen?", "mood": "shock"}},
+      {"say": "Kiểu như cảnh này, mình đã sống qua một lần rồi á.",
+       "scene": {"type": "duo", "do": "talk", "left": {"say": "Hình như mình tới đây rồi", "mood": "shock"}, "right": {"say": "Lần đầu mà?", "look": "nu"}}}
     ]},
     {"beats": [
-      {"say": "Cảm giác đó có tên hẳn hoi nha: đề gia vu.", "cap": "Cảm giác đó có tên hẳn hoi nha: déjà vu.", "photo": "p3",
-       "card": {"icon": "spark", "kicker": "Thuật ngữ hôm nay", "title": "DÉJÀ VU", "echo": true}},
-      {"say": "Tiếng Pháp, nghĩa là: đã thấy rồi.", "card": {"sub": "tiếng Pháp · “đã thấy rồi”", "keep": true}}
+      {"say": "Cảm giác đó có tên hẳn hoi nha: đề gia vu.", "cap": "Cảm giác đó có tên hẳn hoi nha: déjà vu.",
+       "card": {"kicker": "Thuật ngữ hôm nay", "title": "DÉJÀ VU", "big": true},
+       "scene": {"type": "act", "do": "point"}},
+      {"say": "Tiếng Pháp, nghĩa là: đã thấy rồi.", "card": {"sub": "tiếng Pháp · “đã thấy rồi”", "keep": true},
+       "scene": {"type": "sign", "text": "Đã thấy rồi!", "color": "yellow"}}
     ]},
     {"beats": [
-      {"say": "Giả thuyết phổ biến là: não bạn bật nhầm tín hiệu quen thuộc, dù chẳng có ký ức nào thật.", "photo": "p4",
-       "card": {"icon": "brain", "kicker": "Vì sao vậy?", "title": "Não bật nhầm\nnút “quen”"}},
-      {"say": "Giống máy tính báo file đã tồn tại, mà mở thư mục ra thì trống trơn.", "photo": "p5",
-       "card": {"dialog": {"title": "Tệp đã tồn tại", "text": "“cảnh-này.jpg” đã có rồi?", "buttons": ["Bỏ qua", "Thay thế"], "note": "Thư mục: 0 mục"}}}
+      {"say": "Giả thuyết phổ biến là: não bạn bật nhầm tín hiệu quen thuộc, dù chẳng có ký ức nào thật.",
+       "card": {"kicker": "Vì sao vậy?", "title": "Não bật nhầm\nnút “quen”"},
+       "scene": {"type": "icons", "items": [{"icon": "brain", "label": "não"}, {"icon": "spark", "label": "bật nhầm"}, {"icon": "question", "label": "quen ở đâu?"}], "do": "shrug"}},
+      {"say": "Giống máy tính báo file đã tồn tại, mà mở thư mục ra thì trống trơn.",
+       "scene": {"type": "dialog", "title": "Tệp đã tồn tại", "text": "“cảnh-này.jpg” đã có rồi?", "buttons": ["Bỏ qua", "Thay thế"], "note": "Thư mục: 0 mục"}}
     ]},
     {"outro": true, "beats": [
-      {"say": "Còn bạn, lần gần nhất bị đề gia vu là ở đâu? Kể nghe với!", "cap": "Còn bạn, lần gần nhất bị déjà vu là ở đâu? Kể nghe với!", "photo": "p6"}
+      {"say": "Còn bạn, lần gần nhất bị đề gia vu là ở đâu? Kể nghe với!", "cap": "Còn bạn, lần gần nhất bị déjà vu là ở đâu? Kể nghe với!"}
     ]}
   ]
 }
 ```
 
-(Ví dụ đã rút gọn còn 4 cảnh; bài thật cần 5–8 cảnh, 8–12 ảnh.)
+(Ví dụ đã rút gọn còn 4 cảnh; bài thật cần 5–8 cảnh và ít nhất 5 loại `type`.)
 
 Ghi file JSON vào đúng đường dẫn được nêu trong lệnh (UTF-8, JSON hợp lệ), rồi dừng.

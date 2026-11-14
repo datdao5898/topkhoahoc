@@ -2,7 +2,13 @@
 
 Video dọc 1080×1920, 55–85 giây, dựng bằng HyperFrames.
 
-**Mặc định từ 2026-11-01: kiểu ảnh (`video/photo.py`)**, theo bản demo déjà vu: ảnh thật CC0 toàn khung (Ken Burns, hoà tan), thẻ chữ + icon vẽ nét, phụ đề pop, giọng VieNeu **"Hải Đăng"**. Ảnh lấy tự động từ kho Unsplash trên Wikimedia Commons theo từ khoá trong storyboard (`photos`); nguồn từng ảnh ghi ở `<thư mục>/assets/photos/CREDITS.json`. Muốn tự chọn ảnh: bỏ `p3.jpg`… vào `assets/photos` trước khi chạy (đã có thì không tải lại), hoặc đổi từ khoá rồi chạy lại.
+**Mặc định từ 2026-11-14: kiểu người que (`video/stick.py` + `video/stick.js`)**, theo bản HYROX: người que nét mực trên nền giấy tập, mỗi beat một cảnh nhân vật làm động tác hoặc tương tác (khoảng 30 động tác, 13 loại cảnh: `act`, `duo`, `phone`, `chat`, `panels`, `dialog`, `sign`, `calendar`, `stat`, `versus`, `crowd`, `icons`, `board`; cảnh cuối về đích tự dựng). Thẻ chữ phía trên (y 150–560), sân khấu ở giữa (mặt đất y=1300), phụ đề pop phía dưới (y 1425), giọng VieNeu **"Hải Đăng"**. Không cần ảnh hay key nào. Định dạng storyboard và bảng động tác: `scripts/daily-video-prompt.md`.
+
+- `stick.py` kiểm tra storyboard (lỗi → exit 2 để Claude viết lại), tạo giọng, tính giờ từng cảnh/thẻ, rồi chèn nguyên `stick.js` vào `compositions/stick.html` kèm dữ liệu cảnh.
+- Thêm động tác: viết hàm trong `ACTIONS` ở `stick.js`, thêm tên vào `ACTIONS` ở `stick.py` và vào danh sách trong prompt. Thêm loại cảnh: `SCENES` ở `stick.js`, `TYPES` + `check_scene` ở `stick.py`, bảng trong prompt.
+- Lệnh tay: `& $py -X utf8 video/stick.py <storyboard> <thư mục>` (thêm `--no-voice` để dựng lại hình mà giữ giọng đã tạo).
+
+**Kiểu ảnh (`video/photo.py`, mặc định 2026-11-01 → 11-13, nay chạy tay)**, theo bản demo déjà vu: ảnh thật CC0 toàn khung (Ken Burns, hoà tan), thẻ chữ + icon vẽ nét, phụ đề pop, giọng VieNeu **"Hải Đăng"**. Ảnh lấy tự động từ kho Unsplash trên Wikimedia Commons theo từ khoá trong storyboard (`photos`); nguồn từng ảnh ghi ở `<thư mục>/assets/photos/CREDITS.json`. Muốn tự chọn ảnh: bỏ `p3.jpg`… vào `assets/photos` trước khi chạy (đã có thì không tải lại), hoặc đổi từ khoá rồi chạy lại.
 
 **Chọn ảnh (`--pick`, job hằng ngày luôn bật)**: mỗi ảnh lấy tối đa 5 ứng viên, cắt khung dọc, ghép thành dải `<thư mục>/.cand/<id>.jpg`; Claude (`claude -p`, đọc `.cand/PICK.md`) xem và chọn ảnh hợp câu đọc nhất, ghi `.cand/picks.json`. Không ảnh nào hợp thì báo lỗi kèm lý do để viết lại từ khoá; lần thử cuối thêm `--lenient` để vẫn ra video.
 

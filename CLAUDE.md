@@ -15,13 +15,13 @@ Mỗi lần push bài mới vào `content/terms/`, GitHub Action `.github/workfl
 
 ## Video thuật ngữ
 
-- Kiểu dựng (từ 2026-11-01, theo bản demo déjà vu): **ảnh thật** CC0 (kho Unsplash trên Wikimedia Commons, máy tự tìm theo từ khoá), zoom chậm, hoà tan, thẻ chữ + icon vẽ nét.
+- Kiểu dựng (từ 2026-11-14, theo bản HYROX): **người que** nét mực trên nền giấy tập, mỗi câu đọc một cảnh nhân vật tương tác (chạy, đập tay, nhắn tin, bấm hộp thoại…), thẻ chữ phía trên, phụ đề phía dưới. Kiểu ảnh thật cũ (`video/photo.py`) chỉ còn chạy tay.
 - Giọng: VieNeu-TTS, preset **"Hải Đăng"**, chạy trên máy, miễn phí. Văn phong trẻ trung, tếu.
-- Storyboard JSON (`logs/video/`) → `video/photo.py` (tải ảnh + giọng + cảnh) → render HyperFrames → `scripts/facebook-video.mjs`.
+- Storyboard JSON (`logs/video/`) → `video/stick.py` (giọng + tính thời gian + ráp cảnh; phần vẽ ở `video/stick.js`) → render HyperFrames → `scripts/facebook-video.mjs`.
 - Mỗi thuật ngữ chỉ đăng video một lần, ghi ở `logs/facebook-videos.json`, tách khỏi `logs/facebook-posted.json` của bài viết.
 - Reel được nhúng vào trang thuật ngữ khi tới giờ đăng, lấy từ `content/videos.json` (có trong repo). `scripts/facebook-video.mjs` ghi file này, `scripts/daily-video.ps1` commit và push.
-- Hook 3 giây: giọng và thẻ chữ vào từ khung hình đầu, ảnh mở đầu giữ đủ 3 giây, câu hook tối đa 12 chữ và đọc xong dưới 3 giây (`video/photo.py` tự kiểm tra). Cách viết hook ở `scripts/daily-video-prompt.md`.
-- Sửa cách dựng cảnh: `video/photo.py` (kiểu cũ có điện thoại/chat/timeline vẫn ở `video/make.py`). Sửa cách viết kịch bản: `scripts/daily-video-prompt.md`.
+- Hook 3 giây: giọng, thẻ chữ và cảnh vào từ khung hình đầu, cảnh mở đầu giữ đủ 3 giây, câu hook tối đa 12 chữ và đọc xong dưới 3 giây (`video/stick.py` tự kiểm tra). Cách viết hook ở `scripts/daily-video-prompt.md`.
+- Sửa hình người que, động tác, loại cảnh: `video/stick.js` (thêm động tác/loại cảnh thì khai báo cả trong danh sách kiểm tra ở `video/stick.py` và bảng trong prompt). Sửa cách viết kịch bản: `scripts/daily-video-prompt.md`. Kiểu cũ: `video/photo.py` (ảnh), `video/make.py` (điện thoại/chat/timeline).
 
 ## Đăng Facebook
 
