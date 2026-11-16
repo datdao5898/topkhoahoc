@@ -17,6 +17,8 @@ Mỗi lần push bài mới vào `content/terms/`, GitHub Action `.github/workfl
 
 - Kiểu dựng (từ 2026-11-14, theo bản HYROX): **người que** nét mực trên nền giấy tập, mỗi câu đọc một cảnh nhân vật tương tác (chạy, đập tay, nhắn tin, bấm hộp thoại…), thẻ chữ phía trên, phụ đề phía dưới. Kiểu ảnh thật cũ (`video/photo.py`) chỉ còn chạy tay.
 - Giọng: VieNeu-TTS, preset **"Hải Đăng"**, chạy trên máy, miễn phí. Văn phong trẻ trung, tếu.
+- Cảm xúc (từ 2026-11-17): mỗi video có **một nhân vật chính** (tên dân dã, `"hero": true` → băng đô đỏ) ở ít nhất 4 beat, có cú đảo chiều "Nhưng khoan…", hạn chế mood `neutral`, và **nhạc nền** theo tông (`"music"`: `vui` / `drama` / `am-ap` / `hoi-hop`) tự hạ nhỏ khi có giọng. `video/stick.py` bắt buộc các điều này (trừ lần thử cuối `--lenient`).
+- Nhạc nền nằm ngoài repo ở `C:\Users\datda\Videos\topkhoahoc\music` (Mixkit, nguồn ghi ở `NGUON.md`). Tên file bắt đầu bằng tông; thêm bài thì cứ bỏ file vào. Thiếu nhạc thì video vẫn dựng, không nhạc.
 - Storyboard JSON (`logs/video/`) → `video/stick.py` (giọng + tính thời gian + ráp cảnh; phần vẽ ở `video/stick.js`) → render HyperFrames → `scripts/facebook-video.mjs`.
 - Mỗi thuật ngữ chỉ đăng video một lần, ghi ở `logs/facebook-videos.json`, tách khỏi `logs/facebook-posted.json` của bài viết.
 - Reel được nhúng vào trang thuật ngữ khi tới giờ đăng, lấy từ `content/videos.json` (có trong repo). `scripts/facebook-video.mjs` ghi file này, `scripts/daily-video.ps1` commit và push.

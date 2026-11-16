@@ -17,6 +17,15 @@ Giọng đọc là giọng nam (VieNeu-TTS "Hải Đăng"). Video dựng kiểu 
 - Beat có cảnh `dialog` hoặc `chat`: câu `say` nên đọc luôn ý của hộp thoại / tin nhắn, chữ trên hình ngắn, nếu không người xem đọc không kịp.
 - Trong `say`, viết số bằng chữ để máy đọc đúng ("năm một chín bảy tám", "hơn hai mươi lăm nghìn"); khi đó thêm `cap` là câu hiển thị phụ đề có số ("Năm 1978, …"). Từ tiếng Anh giữ nguyên (máy đọc được). Từ tiếng Pháp, Nhật, Hàn… thì viết phiên âm tiếng Việt trong `say` ("đề gia vu") và giữ chữ gốc trong `cap` ("déjà vu").
 
+## Cảm xúc: kể chuyện qua một nhân vật chính
+
+Video phải có **cảm xúc**, không chỉ đọc thông tin. Ba việc bắt buộc:
+
+- **Một nhân vật chính xuyên suốt.** Đặt tên dân dã (Tèo, Tí, Bông, Mít, Na…; đổi tên mỗi ngày) và giới thiệu ở beat 2 ("Đây là Tèo…"). Mọi cảnh có nhân vật chính thì gắn `"hero": true` (máy vẽ băng đô đỏ để người xem nhận ra; trong `duo` / `versus` / `panels` gắn vào đúng người đó). Nhân vật chính xuất hiện ở **ít nhất 4 beat**. Cảnh về đích cuối video cũng là người đeo băng đô đỏ, nên câu outro có thể khép chuyện của nhân vật ("Thế là Tèo…").
+- **Có lên có xuống.** Nhân vật gặp chuyện → phản ứng (hớn hở, sốc, sợ, xấu hổ…) → có một cú đảo chiều ở khoảng 2/3 video (thẻ `kicker` "Nhưng khoan…") → rút ra điều gì đó. Thông tin thật vẫn lấy từ file thuật ngữ; chỉ phần tình huống là của nhân vật.
+- **Cảnh nào cũng có người phản ứng.** Mỗi cảnh đặt `mood` khớp cảm xúc của câu đọc. **Không dùng `neutral`** (tối đa 1 lần cả video). Cảnh thông tin (`calendar`, `stat`, `board`, `icons`, `sign`) cũng phải có mood rõ: sốc trước con số, hớn hở khoe, buồn lo khi cảnh báo.
+- **Nhạc nền:** chọn `"music"` theo tông chung của thuật ngữ: `vui` (tếu, trend, từ lóng; dùng nhiều nhất), `drama` (scandal, drama mạng, chuyện gây tranh cãi), `am-ap` (tình cảm, chữa lành, gia đình), `hoi-hop` (lừa đảo, cảnh báo, hiệu ứng tâm lý bí ẩn).
+
 ## Câu hook mở đầu
 
 Người xem quyết định ở lại hay lướt qua trong 3 giây đầu, phần lớn đang tắt tiếng. **Beat đầu tiên phải là hook**, và 3 giây đầu phải đủ cả ba thứ:
@@ -66,6 +75,7 @@ Quy tắc:
   "style": "stick",
   "term": "Tên thuật ngữ như trong file",
   "slug": "slug-file",
+  "music": "vui | drama | am-ap | hoi-hop",
   "caption": "Mô tả bài Facebook: 1–3 câu, có 1 emoji, gợi tò mò. Không chèn link, không hashtag (máy tự thêm).",
   "scenes": [ { "beats": [ { "say": "...", "card": { "...": "..." }, "scene": { "type": "...", "...": "..." } } ] }, { "outro": true, "beats": [ { "say": "..." } ] } ]
 }
@@ -93,12 +103,12 @@ Thẻ hiện ở nửa trên màn hình cho tới thẻ sau, hết cảnh thì t
 
 ### Cảnh (`scene`)
 
-Sân khấu nằm giữa thẻ chữ và phụ đề. Nhân vật là người que; `mood` đổi nét mặt; `look`: `"nam"` (mặc định), `"nu"` (có tóc buộc), `"kinh"` (đeo kính đen).
+Sân khấu nằm giữa thẻ chữ và phụ đề. Nhân vật là người que; `mood` đổi nét mặt; `look`: `"nam"` (mặc định), `"nu"` (có tóc buộc), `"kinh"` (đeo kính đen); `hero: true`: nhân vật chính (băng đô đỏ), đặt được ở mọi chỗ có `mood` (cảnh, `left` / `right`, từng ô `items` của `panels`). Riêng `crowd` không có nhân vật chính.
 
 **Động tác** (`do`, dùng trong nhiều loại cảnh):
 `stand` đứng · `walk` đi bộ · `run` chạy (đổ mồ hôi) · `jump` nhảy · `cheer` giơ hai tay ăn mừng · `think` tay chống cằm + bong bóng suy nghĩ · `idea` nghĩ rồi bật bóng đèn · `shrug` nhún vai · `facepalm` ôm mặt · `wave` vẫy tay · `point` chỉ lên tiêu đề · `phone` cầm điện thoại · `selfie` chụp ảnh tự sướng · `laptop` ngồi gõ máy tính · `sit` ngồi ghế · `read` đọc sách · `sleep` nằm ngủ (zzz) · `cry` khóc · `lift` nâng tạ · `push` đẩy xe trượt · `pull` kéo dây · `carry` bê thùng · `dance` nhảy múa (nốt nhạc) · `angry` tức (bốc khói) · `love` thả tim · `shock` giật mình "!!" · `scared` run sợ · `tired` mệt rã rời · `money` cầm tiền (đồng xu bay) · `eat` ăn
 
-**Mood:** `happy` `grin` `sad` `shock` `tired` `angry` `neutral` `love` `scared` `proud`
+**Mood:** `happy` `grin` `sad` `shock` `tired` `angry` `love` `scared` `proud` (`neutral` chỉ dùng tối đa 1 lần)
 
 | `type` | Trường | Dùng khi |
 |---|---|---|
@@ -109,14 +119,14 @@ Sân khấu nằm giữa thẻ chữ và phụ đề. Nhân vật là người q
 | `panels` | `items`: 2–4 ô `{"do": "...", "label": "≤ 18", "mood": "..."}` | Liệt kê các bước, dấu hiệu, ví dụ: mỗi ô một nhân vật làm một việc, hiện lần lượt |
 | `dialog` | `title` (≤ 24), `text` (≤ 40), `buttons`: 1–2 nút (≤ 10 ký tự, nút chính để cuối), `note` (≤ 28), `mood` | Hộp thoại kiểu máy tính; nhân vật với tay bấm nút phụ, có `note` thì nút phụ bị gạch + hiện ghi chú, rồi bấm nút chính. Tối đa 1 lần, cho một ví von vui |
 | `sign` | `text` (≤ 24), `color`: `"yellow"` / `"red"` (tuỳ chọn), `mood` | Nhân vật giơ biển: một câu khẩu hiệu, tên gọi, con số ngắn |
-| `calendar` | `month` (≤ 16, ví dụ "THÁNG 3 · 2027"), `day` (≤ 7, ví dụ "6–7", "1964"), `stamp` (≤ 12, ví dụ "DỰ KIẾN") | Ngày tháng, năm ra đời |
+| `calendar` | `month` (≤ 16, ví dụ "THÁNG 3 · 2027"), `day` (≤ 7, ví dụ "6–7", "1964"), `stamp` (≤ 12, ví dụ "DỰ KIẾN"), `mood` | Ngày tháng, năm ra đời |
 | `stat` | `value` (≤ 9 ký tự: "38", "25.000+", "70%"), `label` (≤ 40), `do` (mặc định `shock`) | Một con số có trong file thuật ngữ (số chạy tăng dần) |
 | `versus` | `left` / `right`: `{"label": "≤ 16", "do": "...", "mood": "..."}` | So sánh hai phía, hai cách làm, đúng/sai |
 | `crowd` | `do`, `count` (3–7), `label` (≤ 24), `mood` | Cả đám cùng làm một việc: trend lan rộng, ai cũng vậy |
 | `icons` | `items`: 1–3 `{"icon": "...", "label": "≤ 14"}`, `do` | Vài ý ngắn kèm icon: `question` `eye` `spark` `book` `brain` `users` `battery` `smile` `heart` `flag` `alert` `chat` `phone` `clock` `check` `cross` `bulb` `star` `money` `chart` `fire` `globe` `lock` `shield` `music` `coffee` `search` |
-| `board` | `lines`: 1–4 dòng (≤ 22 ký tự) | Nhân vật đeo kính cầm que chỉ bảng: định nghĩa, các bước, mẹo |
+| `board` | `lines`: 1–4 dòng (≤ 22 ký tự), `mood` | Nhân vật đeo kính cầm que chỉ bảng: định nghĩa, các bước, mẹo |
 
-Gợi ý mạch: tình huống (hook: `phone` / `chat` / `crowd` / `duo`) → gọi tên + nghĩa (`act` với `point` hoặc `cheer`, thẻ `big`) → nguồn gốc (`calendar`, `sign`, `stat`) → vì sao hot / dấu hiệu / ví dụ (`panels`, `icons`, `versus`, `duo`, có thể một `dialog` vui) → lưu ý (`board`, `duo` `doctor`, `act` `think`) → `outro` (lời mời bình luận nhẹ).
+Gợi ý mạch: tình huống của nhân vật chính (hook: `phone` / `chat` / `duo`) → gọi tên + nghĩa (`act` với `point` hoặc `cheer`, thẻ `big`) → nguồn gốc (`calendar`, `sign`, `stat`) → nhân vật trải nghiệm / dấu hiệu / ví dụ (`panels`, `icons`, `versus`, `duo`, có thể một `dialog` vui) → "Nhưng khoan…" đảo chiều + lưu ý (`versus`, `board`, `duo` `doctor`, `act` `think`) → `outro` (khép chuyện nhân vật + lời mời bình luận nhẹ).
 
 Chọn động tác **khớp nghĩa câu đọc**: câu nói về mệt thì `tired` / `run`, nhắn tin thì `chat` / `phone`, tức giận thì `argue` / `angry`, vui thì `cheer` / `dance`… Đừng dùng `stand` cho mọi thứ.
 
@@ -127,36 +137,37 @@ Chọn động tác **khớp nghĩa câu đọc**: câu nói về mệt thì `ti
   "style": "stick",
   "term": "Déjà vu",
   "slug": "deja-vu",
+  "music": "hoi-hop",
   "caption": "Lạ mà quen, như đã sống qua một lần rồi? 🌀 Cảm giác đó có tên đó nha.",
   "scenes": [
     {"beats": [
       {"say": "Bạn đã bao giờ bước vào một nơi hoàn toàn lạ, mà thấy quen quen chưa?",
        "card": {"kicker": "Bạn có từng…", "title": "Lạ mà quen?"},
-       "scene": {"type": "act", "do": "think", "think": "Ủa, quen quen?", "mood": "shock"}},
-      {"say": "Kiểu như cảnh này, mình đã sống qua một lần rồi á.",
-       "scene": {"type": "duo", "do": "talk", "left": {"say": "Hình như mình tới đây rồi", "mood": "shock"}, "right": {"say": "Lần đầu mà?", "look": "nu"}}}
+       "scene": {"type": "act", "do": "think", "think": "Ủa, quen quen?", "mood": "shock", "hero": true}},
+      {"say": "Đây là Mít. Lần đầu tới quán này, mà Mít thề là mình từng ngồi đây rồi.",
+       "scene": {"type": "duo", "do": "talk", "left": {"say": "Tui tới đây rồi á!", "mood": "shock", "hero": true, "label": "Mít"}, "right": {"say": "Lần đầu mà?", "look": "nu", "mood": "grin"}}}
     ]},
     {"beats": [
       {"say": "Cảm giác đó có tên hẳn hoi nha: đề gia vu.", "cap": "Cảm giác đó có tên hẳn hoi nha: déjà vu.",
        "card": {"kicker": "Thuật ngữ hôm nay", "title": "DÉJÀ VU", "big": true},
-       "scene": {"type": "act", "do": "point"}},
+       "scene": {"type": "act", "do": "point", "mood": "grin", "hero": true}},
       {"say": "Tiếng Pháp, nghĩa là: đã thấy rồi.", "card": {"sub": "tiếng Pháp · “đã thấy rồi”", "keep": true},
-       "scene": {"type": "sign", "text": "Đã thấy rồi!", "color": "yellow"}}
+       "scene": {"type": "sign", "text": "Đã thấy rồi!", "color": "yellow", "mood": "proud", "hero": true}}
     ]},
     {"beats": [
       {"say": "Giả thuyết phổ biến là: não bạn bật nhầm tín hiệu quen thuộc, dù chẳng có ký ức nào thật.",
        "card": {"kicker": "Vì sao vậy?", "title": "Não bật nhầm\nnút “quen”"},
-       "scene": {"type": "icons", "items": [{"icon": "brain", "label": "não"}, {"icon": "spark", "label": "bật nhầm"}, {"icon": "question", "label": "quen ở đâu?"}], "do": "shrug"}},
+       "scene": {"type": "icons", "items": [{"icon": "brain", "label": "não"}, {"icon": "spark", "label": "bật nhầm"}, {"icon": "question", "label": "quen ở đâu?"}], "do": "shrug", "mood": "shock"}},
       {"say": "Giống máy tính báo file đã tồn tại, mà mở thư mục ra thì trống trơn.",
-       "scene": {"type": "dialog", "title": "Tệp đã tồn tại", "text": "“cảnh-này.jpg” đã có rồi?", "buttons": ["Bỏ qua", "Thay thế"], "note": "Thư mục: 0 mục"}}
+       "scene": {"type": "dialog", "title": "Tệp đã tồn tại", "text": "“cảnh-này.jpg” đã có rồi?", "buttons": ["Bỏ qua", "Thay thế"], "note": "Thư mục: 0 mục", "mood": "grin", "hero": true}}
     ]},
     {"outro": true, "beats": [
-      {"say": "Còn bạn, lần gần nhất bị đề gia vu là ở đâu? Kể nghe với!", "cap": "Còn bạn, lần gần nhất bị déjà vu là ở đâu? Kể nghe với!"}
+      {"say": "Mít thì yên tâm ăn tiếp rồi. Còn bạn, lần gần nhất bị đề gia vu là ở đâu?", "cap": "Mít thì yên tâm ăn tiếp rồi. Còn bạn, lần gần nhất bị déjà vu là ở đâu?"}
     ]}
   ]
 }
 ```
 
-(Ví dụ đã rút gọn còn 4 cảnh; bài thật cần 5–8 cảnh và ít nhất 5 loại `type`.)
+(Ví dụ đã rút gọn còn 4 cảnh; bài thật cần 5–8 cảnh, ít nhất 5 loại `type`, nhân vật chính ở ít nhất 4 beat và một cú "Nhưng khoan…".)
 
 Ghi file JSON vào đúng đường dẫn được nêu trong lệnh (UTF-8, JSON hợp lệ), rồi dừng.

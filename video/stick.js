@@ -165,7 +165,8 @@ window.STICK = (function () {
         flat: mouthP("M7 -132 L 26 -132"), sad: mouthP("M6 -127 Q 16 -137 27 -127"), grin: mouthP("M4 -137 Q 16 -116 29 -137 Z", INK),
       };
       for (const k in f.m) if (k !== (o.mouth || "smile")) f.m[k].style.opacity = 0;
-      if (o.band) path(hd, "M-33 -160 Q 0 -168 33 -160", { stroke: o.band, w: 10 });
+      const band = o.band || (o.hero ? RED : null);
+      if (band) path(hd, "M-33 -160 Q 0 -168 33 -160", { stroke: band, w: 10 });
       if (o.mirror) circ(hd, 6, -178, 13, { fill: STEEL, w: 4 });
       arm(1, INK);
       f.front = grp(bd);
@@ -451,7 +452,7 @@ window.STICK = (function () {
     function person(g, x, hy, s, o, name, t0, t1, sc) {
       o = o || {};
       const look = o.look || "";
-      const f = fig(g, x, hy, s, { flip: o.flip, mouth: moodOf(name, o.mood), hair: look === "nu" || look === "girl", glasses: look === "kinh" || look === "glasses", band: o.band, mirror: o.mirror, sw: o.sw });
+      const f = fig(g, x, hy, s, { flip: o.flip, mouth: moodOf(name, o.mood), hair: look === "nu" || look === "girl", glasses: look === "kinh" || look === "glasses", band: o.band, hero: o.hero, mirror: o.mirror, sw: o.sw });
       act(f, name, t0, t1, g, sc);
       return f;
     }
@@ -501,8 +502,8 @@ window.STICK = (function () {
       if (kind === "highfive") { xl = 470; xr = 610; }
       if (kind === "hug") { xl = 500; xr = 580; }
       if (kind === "chase") { xl = 280; xr = 760; }
-      const fl = fig(g, xl, HY, S, { mouth: moodOf("stand", L.mood), hair: L.look === "nu", glasses: L.look === "kinh", band: L.band });
-      const fr = fig(g, xr, HY, S, { flip: kind !== "chase", mouth: moodOf("stand", R.mood), hair: R.look === "nu", glasses: R.look === "kinh", band: R.band, mirror: kind === "doctor" });
+      const fl = fig(g, xl, HY, S, { mouth: moodOf("stand", L.mood), hair: L.look === "nu", glasses: L.look === "kinh", band: L.band, hero: L.hero });
+      const fr = fig(g, xr, HY, S, { flip: kind !== "chase", mouth: moodOf("stand", R.mood), hair: R.look === "nu", glasses: R.look === "kinh", band: R.band, hero: R.hero, mirror: kind === "doctor" });
       blink(fl, t0, t1); blink(fr, t0 + 0.6, t1);
       const say = (f, who, t, side) => { if (!who.say) return; const [hx, hy] = head(f); const b = hidden(bubble(g, side < 0 ? 300 : 780, hy - 140, who.say, { tx: hx + (side < 0 ? 20 : -20), ty: hy - 50, fs: 34 })); show(b, t, { from: 0.4 }); return b; };
       if (kind === "talk" || kind === "argue" || kind === "ignore") {
@@ -553,7 +554,7 @@ window.STICK = (function () {
     };
     SCENES.phone = (g, sc, t0, t1) => {
       ground(g);
-      const f = person(g, 300, HY, S, { mood: sc.mood || "shock", look: sc.look }, "phone", t0, t1);
+      const f = person(g, 300, HY, S, { mood: sc.mood || "shock", look: sc.look, hero: sc.hero }, "phone", t0, t1);
       const [px, py] = hand(f, { ua: 55, fa: 95 });
       line(g, px + 40, py - 60, 540, 640, 4, BACK).setAttribute("stroke-dasharray", "10 12");
       line(g, px + 40, py + 40, 540, 1040, 4, BACK).setAttribute("stroke-dasharray", "10 12");
@@ -610,12 +611,12 @@ window.STICK = (function () {
         const hy = fl - 144 * PS - (it.do === "laptop" || it.do === "sit" ? -72 * PS : 0);
         const sub = grp(pg);
         it._panel = true;
-        person(sub, x0 + (it.do === "push" || it.do === "laptop" ? 130 : it.do === "pull" ? 120 : 230), hy, PS, { mood: it.mood, look: it.look }, it.do, t, t1, it);
+        person(sub, x0 + (it.do === "push" || it.do === "laptop" ? 130 : it.do === "pull" ? 120 : 230), hy, PS, { mood: it.mood, look: it.look, hero: it.hero }, it.do, t, t1, it);
       });
     };
     SCENES.dialog = (g, sc, t0, t1, id) => {
       ground(g);
-      const D = t1 - t0, s = 1.2, f = fig(g, 300, GROUND - 144 * s, s, { mouth: moodOf("stand", sc.mood || "tired"), hair: sc.look === "nu" });
+      const D = t1 - t0, s = 1.2, f = fig(g, 300, GROUND - 144 * s, s, { mouth: moodOf("stand", sc.mood || "tired"), hair: sc.look === "nu", hero: sc.hero });
       blink(f, t0, t1);
       const btns = (sc.buttons && sc.buttons.length ? sc.buttons : ["Huỷ", "OK"]).slice(0, 2);
       const d = document.createElement("div"); d.className = "dlg"; d.id = id + "-dlg"; d.setAttribute("data-layout-allow-overlap", "");
@@ -650,7 +651,7 @@ window.STICK = (function () {
     };
     SCENES.sign = (g, sc, t0, t1) => {
       ground(g);
-      const f = fig(g, 540, HY, S, { mouth: moodOf("stand", sc.mood || "grin"), hair: sc.look === "nu" });
+      const f = fig(g, 540, HY, S, { mouth: moodOf("stand", sc.mood || "grin"), hair: sc.look === "nu", hero: sc.hero });
       blink(f, t0, t1);
       const pose = Object.assign({}, STAND, { ua1: 165, fa1: 10, ua2: 160, fa2: 15 });
       P(f, t0, pose, 0);
@@ -664,7 +665,7 @@ window.STICK = (function () {
     };
     SCENES.calendar = (g, sc, t0, t1) => {
       ground(g);
-      person(g, 300, HY, S, { mood: sc.mood || "grin", look: sc.look }, "point", t0, t1);
+      person(g, 300, HY, S, { mood: sc.mood || "grin", look: sc.look, hero: sc.hero }, "point", t0, t1);
       const cal = grp(g);
       rect(cal, 560, 720, 420, 500, { rx: 26, w: 7 });
       path(cal, "M560 830 L560 746 Q 560 720 586 720 L954 720 Q 980 720 980 746 L980 830 Z", { fill: RED, w: 7 });
@@ -683,7 +684,7 @@ window.STICK = (function () {
     };
     SCENES.stat = (g, sc, t0, t1) => {
       ground(g);
-      person(g, 230, HY, S, { mood: sc.mood || "shock", look: sc.look }, sc.do || "shock", t0, t1);
+      person(g, 230, HY, S, { mood: sc.mood || "shock", look: sc.look, hero: sc.hero }, sc.do || "shock", t0, t1);
       const v = String(sc.value || ""), fs = v.length > 7 ? 150 : v.length > 5 ? 190 : 240;
       const box = grp(g);
       const num = /^[\d.]+$/.test(v.replace(/[+%]/g, "")) && v.replace(/\D/g, "").length > 0 && v.replace(/\D/g, "").length <= 7;
@@ -704,8 +705,8 @@ window.STICK = (function () {
     SCENES.versus = (g, sc, t0, t1) => {
       ground(g);
       const L = sc.left || {}, R = sc.right || {};
-      person(g, 270, HY, S, { mood: L.mood, look: L.look, band: L.band }, L.do || "stand", t0, t1, L);
-      person(g, 810, HY, S, { flip: true, mood: R.mood, look: R.look, band: R.band }, R.do || "stand", t0, t1, R);
+      person(g, 270, HY, S, { mood: L.mood, look: L.look, band: L.band, hero: L.hero }, L.do || "stand", t0, t1, L);
+      person(g, 810, HY, S, { flip: true, mood: R.mood, look: R.look, band: R.band, hero: R.hero }, R.do || "stand", t0, t1, R);
       const vs = text(g, 540, 1000, "VS", { ff: "Anton", fw: 400, fs: 150, fill: RED }); pop(vs, t0 + 0.4, { ease: "back.out(3)" });
       if (L.label) { const l = hidden(tag(g, 270, 700, L.label, { fs: 34 })); show(l, t0 + 0.2); }
       if (R.label) { const l = hidden(tag(g, 810, 700, R.label, { fs: 34 })); show(l, t0 + 0.6); }
@@ -734,7 +735,7 @@ window.STICK = (function () {
         tl.to(ig, { opacity: 1, duration: 0.1 }, t); pop(ig, t);
       });
       const ido = !sc.do || sc.do === "think" || sc.do === "idea" ? "point" : sc.do;
-      person(g, 540, HY, S, { mood: sc.mood, look: sc.look }, ido, t0, t1, sc);
+      person(g, 540, HY, S, { mood: sc.mood, look: sc.look, hero: sc.hero }, ido, t0, t1, sc);
     };
     SCENES.board = (g, sc, t0, t1) => {
       ground(g);
@@ -745,7 +746,7 @@ window.STICK = (function () {
         const tx = hidden(text(g, 400, 740 + i * 100, (i + 1) + ". " + l, { fs: l.length > 16 ? 40 : 48, anchor: "start" }));
         tl.fromTo(tx, { opacity: 0, x: -20 }, { opacity: 1, x: 0, duration: 0.3, ease: "power2.out", immediateRender: false }, t0 + 0.2 + i * Math.min(0.9, (D - 0.6) / lines.length));
       });
-      const f = person(g, 200, HY, S, { mood: sc.mood || "happy", look: sc.look || "kinh" }, "stand", t0, t1);
+      const f = person(g, 200, HY, S, { mood: sc.mood || "happy", look: sc.look || "kinh", hero: sc.hero }, "stand", t0, t1);
       const stick = grp(f.h1); line(stick, 0, 13, 0, 150, 5, WOOD);
       for (let i = 0; i < lines.length; i++) P(f, t0 + 0.2 + i * Math.min(0.9, (D - 0.6) / lines.length), { ua1: 95 + i * 6, fa1: 15 - i * 12 }, 0.25);
     };

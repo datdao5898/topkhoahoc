@@ -5,7 +5,7 @@
 # tạo giọng, tính thời gian từng cảnh và ráp project HyperFrames.
 #   <venv>/Scripts/python -X utf8 video/stick.py logs/video/2026-11-15-x.json C:/Users/datda/Videos/topkhoahoc/2026-11-15-x [--no-voice] [--lenient]
 # Lỗi storyboard → exit 2 (daily-video.ps1 cho Claude viết lại kèm thông báo lỗi).
-import json, pathlib, sys
+import json, os, pathlib, subprocess, sys
 
 HERE = pathlib.Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
@@ -23,6 +23,10 @@ ACTIONS = ["stand", "walk", "run", "jump", "cheer", "think", "idea", "shrug", "f
            "scared", "tired", "money", "eat"]
 MOODS = ["happy", "grin", "sad", "shock", "tired", "angry", "neutral", "love", "scared", "proud"]
 DUO = ["talk", "argue", "ignore", "highfive", "hug", "give", "chase", "doctor"]
+# nhạc nền: "music" trong storyboard chọn tông; bài lấy từ thư mục nhạc (tên file bắt đầu bằng tông, vd vui-1.mp3)
+MUSIC_TONES = ["vui", "drama", "am-ap", "hoi-hop"]
+MUSIC_DIR = pathlib.Path(os.environ.get("TOPKHOAHOC_MUSIC", "C:/Users/datda/Videos/topkhoahoc/music"))
+MUSIC_LUFS = -23  # độ to nền lúc không có giọng (giọng đọc ~ -16); có giọng thì tự hạ thêm
 TYPES = ["act", "duo", "phone", "chat", "panels", "dialog", "sign", "calendar", "stat", "versus", "crowd", "icons", "board"]
 
 
@@ -137,6 +141,10 @@ def load(path):
     scenes = sb["scenes"]
     if not 5 <= len(scenes) <= 9:
         fail("cần 5–9 cảnh")
+    if sb.get("music") and sb["music"] not in MUSIC_TONES:
+        fail(f"music '{sb['music']}' không có. Dùng: {', '.join(MUSIC_TONES)}")
+    if "--lenient" not in sys.argv:
+        emotion_check(sb)
     if not scenes[-1].get("outro"):
         fail("cảnh cuối phải có \"outro\": true")
     opening = scenes[0].get("beats") or []
@@ -200,6 +208,25 @@ def load(path):
     if len(types) >= 6 and plain > len(types) * 0.6:
         fail(f"quá nhiều cảnh 'act' ({plain}/{len(types)}): dùng thêm duo, chat, panels, sign, stat… cho đa dạng")
     return sb
+
+
+def emotion_check(sb):
+    """Cảm xúc (từ 2026-11-17): có nhạc nền, nhân vật chính 'hero' ở ít nhất 4 beat, gần như không dùng mood 'neutral'."""
+    if not sb.get("music"):
+        fail(f"thiếu \"music\" (tông nhạc nền). Dùng: {', '.join(MUSIC_TONES)}")
+    people = []
+    hero_beats = 0
+    for sc in sb["scenes"]:
+        for b in sc["beats"]:
+            v = b.get("scene") or {}
+            ps = [v] + [v[k] for k in ("left", "right") if isinstance(v.get(k), dict)] + [x for x in v.get("items") or [] if isinstance(x, dict)]
+            people += ps
+            hero_beats += any(x.get("hero") for x in ps)
+    if hero_beats < 4:
+        fail(f"nhân vật chính (\"hero\": true) mới có ở {hero_beats} beat, cần ít nhất 4")
+    neutral = sum(1 for x in people if x.get("mood") == "neutral")
+    if neutral > 1:
+        fail(f"dùng mood 'neutral' {neutral} lần (tối đa 1): đặt mood khớp cảm xúc câu đọc")
 
 
 def title_size(c):
@@ -291,6 +318,28 @@ def plan(sb, total):
             sfx.append(("impact-bass-1.mp3", t0 + 0.3, 0.35))
         del v["_d"]
     return visuals, cards, sfx
+
+
+def music_bed(sb, out, total):
+    """Ghép nhạc nền: lặp/cắt cho đủ dài, mở/kết mờ dần, tự hạ nhỏ khi có giọng (sidechain). Không có nhạc thì bỏ qua."""
+    tone = sb.get("music")
+    if not tone:
+        return None
+    files = sorted(f for f in MUSIC_DIR.glob(f"{tone}*") if f.suffix.lower() in (".mp3", ".wav", ".m4a", ".ogg"))
+    if not files:
+        print(f"  (chưa có nhạc tông '{tone}' trong {MUSIC_DIR}, dựng không nhạc)", flush=True)
+        return None
+    src = files[len(sb["slug"]) % len(files)]
+    dst = out / "assets" / "bgm.mp3"
+    T = round(total, 2)
+    fc = (f"[0:a]aresample=48000,aformat=channel_layouts=stereo,atrim=0:{T},asetpts=N/SR/TB,loudnorm=I={MUSIC_LUFS}:TP=-3:LRA=11,aresample=48000,"
+          f"afade=t=in:d=0.4,afade=t=out:st={max(0, T - 2.5)}:d=2.5[m];"
+          f"[1:a]aresample=48000,aformat=channel_layouts=stereo,apad=whole_dur={T}[k];"
+          "[m][k]sidechaincompress=threshold=0.05:ratio=2.5:attack=40:release=500[d]")
+    subprocess.run(["ffmpeg", "-y", "-v", "error", "-stream_loop", "-1", "-i", str(src), "-i", str(out / "assets" / "vo.mp3"),
+                    "-filter_complex", fc, "-map", "[d]", "-t", str(T), "-b:a", "160k", str(dst)], check=True)
+    print(f"  nhạc nền: {src.name}", flush=True)
+    return "assets/bgm.mp3"
 
 
 CSS = """
@@ -388,6 +437,9 @@ def main():
     cap = M.captions_html(beats, "pop").replace("top: 1150px", "top: 1425px").replace("rgba(23,20,15,0.86)", "#1d1a16")
     (out / "compositions" / "captions.html").write_text(cap, encoding="utf-8")
     audio = ['      <audio id="vo" class="clip" src="assets/vo.mp3" data-start="0" data-track-index="3" data-volume="1"></audio>']
+    bgm = music_bed(sb, out, total)
+    if bgm:
+        audio.append(f'      <audio id="bgm" class="clip" src="{bgm}" data-start="0" data-track-index="90" data-volume="1"></audio>')
     for j, (name, at, vol) in enumerate(sfx):
         audio.append(f'      <audio id="sfx-{j}" class="clip" src="assets/sfx/{name}" data-start="{r(max(0, at))}" data-track-index="{4 + j}" data-volume="{vol}"></audio>')
     (out / "index.html").write_text(f'''<!doctype html>
