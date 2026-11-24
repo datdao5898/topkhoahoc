@@ -211,9 +211,8 @@ def load(path):
 
 
 def emotion_check(sb):
-    """Cảm xúc (từ 2026-11-17): có nhạc nền, nhân vật chính 'hero' ở ít nhất 4 beat, gần như không dùng mood 'neutral'."""
-    if not sb.get("music"):
-        fail(f"thiếu \"music\" (tông nhạc nền). Dùng: {', '.join(MUSIC_TONES)}")
+    """Cảm xúc (từ 2026-11-17): nhân vật chính 'hero' ở ít nhất 4 beat, gần như không dùng mood 'neutral'.
+    Từ 2026-11-25 video mặc định không nhạc nền; storyboard ghi "music" thì vẫn ghép (chạy tay)."""
     people = []
     hero_beats = 0
     for sc in sb["scenes"]:

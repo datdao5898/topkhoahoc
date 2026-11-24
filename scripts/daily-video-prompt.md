@@ -24,7 +24,7 @@ Video phải có **cảm xúc**, không chỉ đọc thông tin. Ba việc bắt
 - **Một nhân vật chính xuyên suốt.** Đặt tên dân dã (Tèo, Tí, Bông, Mít, Na…; đổi tên mỗi ngày) và giới thiệu ở beat 2 ("Đây là Tèo…"). Mọi cảnh có nhân vật chính thì gắn `"hero": true` (máy vẽ băng đô đỏ để người xem nhận ra; trong `duo` / `versus` / `panels` gắn vào đúng người đó). Nhân vật chính xuất hiện ở **ít nhất 4 beat**. Cảnh về đích cuối video cũng là người đeo băng đô đỏ, nên câu outro có thể khép chuyện của nhân vật ("Thế là Tèo…").
 - **Có lên có xuống.** Nhân vật gặp chuyện → phản ứng (hớn hở, sốc, sợ, xấu hổ…) → có một cú đảo chiều ở khoảng 2/3 video (thẻ `kicker` "Nhưng khoan…") → rút ra điều gì đó. Thông tin thật vẫn lấy từ file thuật ngữ; chỉ phần tình huống là của nhân vật.
 - **Cảnh nào cũng có người phản ứng.** Mỗi cảnh đặt `mood` khớp cảm xúc của câu đọc. **Không dùng `neutral`** (tối đa 1 lần cả video). Cảnh thông tin (`calendar`, `stat`, `board`, `icons`, `sign`) cũng phải có mood rõ: sốc trước con số, hớn hở khoe, buồn lo khi cảnh báo.
-- **Nhạc nền:** chọn `"music"` theo tông chung của thuật ngữ: `vui` (tếu, trend, từ lóng; dùng nhiều nhất), `drama` (scandal, drama mạng, chuyện gây tranh cãi), `am-ap` (tình cảm, chữa lành, gia đình), `hoi-hop` (lừa đảo, cảnh báo, hiệu ứng tâm lý bí ẩn).
+- **Không có nhạc nền** (từ 2026-11-25): không ghi trường `"music"` trong storyboard.
 
 ## Câu hook mở đầu
 
@@ -75,7 +75,6 @@ Quy tắc:
   "style": "stick",
   "term": "Tên thuật ngữ như trong file",
   "slug": "slug-file",
-  "music": "vui | drama | am-ap | hoi-hop",
   "caption": "Mô tả bài Facebook: 1–3 câu, có 1 emoji, gợi tò mò. Không chèn link, không hashtag (máy tự thêm).",
   "scenes": [ { "beats": [ { "say": "...", "card": { "...": "..." }, "scene": { "type": "...", "...": "..." } } ] }, { "outro": true, "beats": [ { "say": "..." } ] } ]
 }
@@ -137,7 +136,6 @@ Chọn động tác **khớp nghĩa câu đọc**: câu nói về mệt thì `ti
   "style": "stick",
   "term": "Déjà vu",
   "slug": "deja-vu",
-  "music": "hoi-hop",
   "caption": "Lạ mà quen, như đã sống qua một lần rồi? 🌀 Cảm giác đó có tên đó nha.",
   "scenes": [
     {"beats": [
