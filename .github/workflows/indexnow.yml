@@ -40,7 +40,19 @@ jobs:
             echo "Lượt push này chỉ sửa bài cũ, không có bài mới."
             exit 0
           fi
+          echo "SLUGS=$(echo $slugs)" >> "$GITHUB_ENV"
           node scripts/indexnow.mjs $slugs
       - name: Gửi bài hẹn ngày hôm nay (hoặc toàn bộ)
         if: github.event_name != 'push'
-        run: node scripts/indexnow.mjs ${{ inputs.all && '--all' || '' }}
+        run: |
+          today=$(TZ=Asia/Ho_Chi_Minh date +%F)
+          slugs=$(grep -l -E "^date:[[:space:]]*[\"']?$today" content/terms/*.md  | xargs -r -n1 basename | sed 's/\.md$//' | { grep -v '^_' || true; })
+          echo "SLUGS=$(echo $slugs)" >> "$GITHUB_ENV"
+          node scripts/indexnow.mjs ${{ inputs.all && '--all' || '' }}
+      # Chưa thêm secret GOOGLE_SERVICE_ACCOUNT thì bước này tự bỏ qua. Xem README phần "Google".
+      - name: Báo Google (Search Console)
+        if: ${{ !cancelled() && (env.SLUGS != '' || github.event_name != 'push') }}
+        env:
+          GOOGLE_SERVICE_ACCOUNT: ${{ secrets.GOOGLE_SERVICE_ACCOUNT }}
+          GOOGLE_INDEXING_API: ${{ vars.GOOGLE_INDEXING_API }}
+        run: node scripts/google-index.mjs $SLUGS

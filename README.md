@@ -52,7 +52,14 @@ Task Scheduler của Windows chạy task **"TopKhoaHoc - Thuat ngu hang ngay"** 
 **GEO (ChatGPT, Perplexity, Gemini, Google AI Overviews):**
 - Mỗi bài mở đầu bằng một câu định nghĩa trả lời thẳng, có nguồn tham khảo và ngày cập nhật: dạng nội dung AI hay trích dẫn
 - `/llms.txt` (mục lục cho AI) và `/llms-full.txt` (toàn bộ nội dung Markdown)
-- IndexNow: GitHub Action `.github/workflows/indexnow.yml` báo bài mới cho Bing (ChatGPT Search dùng index của Bing) ngay khi bài được push và Vercel deploy xong, gồm cả bài bonus và bài viết tay. Bài hẹn ngày được báo lúc khoảng 01:30 sáng ngày đó. Chạy tay: `node scripts/indexnow.mjs <slug>` hoặc `--all`. Google không nhận IndexNow, vẫn tự thu thập qua sitemap.
+- IndexNow: GitHub Action `.github/workflows/indexnow.yml` báo bài mới cho Bing (ChatGPT Search dùng index của Bing) ngay khi bài được push và Vercel deploy xong, gồm cả bài bonus và bài viết tay. Bài hẹn ngày được báo lúc khoảng 01:30 sáng ngày đó. Chạy tay: `node scripts/indexnow.mjs <slug>` hoặc `--all`. Google không nhận IndexNow, nên có thêm bước riêng bên dưới.
+- Google: cùng workflow trên chạy `scripts/google-index.mjs` để gửi lại sitemap lên Search Console sau mỗi bài mới. Chưa có secret thì bước này tự bỏ qua. Cài một lần:
+  1. https://console.cloud.google.com → tạo project → bật **Google Search Console API** (và **Web Search Indexing API** nếu muốn dùng Indexing API).
+  2. IAM → Service Accounts → tạo service account → Keys → Add key → JSON, tải file về.
+  3. Search Console → Cài đặt → Người dùng và quyền → thêm email `client_email` trong file JSON, quyền **Chủ sở hữu**.
+  4. GitHub repo → Settings → Secrets and variables → Actions → secret `GOOGLE_SERVICE_ACCOUNT` = toàn bộ nội dung file JSON. Xoá file JSON khỏi máy sau khi dán, không để trong repo.
+  - Indexing API (báo từng URL, tối đa 200 URL/ngày): Google chỉ hỗ trợ chính thức cho trang tuyển dụng/livestream, dùng cho trang khác thì có thể bị bỏ qua hoặc bị thu hồi quyền. Muốn bật: thêm variable (không phải secret) `GOOGLE_INDEXING_API` = `1`.
+  - Chạy tay: `GOOGLE_APPLICATION_CREDENTIALS=key.json node scripts/google-index.mjs [slug…]`. Kiểm tra bài đã được index chưa: thêm `--check <slug>`.
 - `/feed.xml` (RSS): cho Telegram, Zalo… (Facebook đã tự đăng qua `scripts/facebook-post.mjs`)
 
 ## Chạy local
